@@ -1,0 +1,40 @@
+#+TITLE: Lisp Macros Meet WebAssembly: Compile-Time Magic for Runtime Performance
+#+AUTHOR: aygp-dr
+#+DATE: <2025-05-24>
+#+PROPERTY: header-args :mkdirp yes
+
+* Talk Outline (5 minutes)
+
+** Introduction (30s)
+- Problem: Lisp's expressiveness vs. web performance demands
+- Solution: Macro-generated WebAssembly
+
+** Core Concept (2 minutes)
+- Demonstrate macro that transforms Lisp DSL to WASM
+- Show compile-time optimization opportunities
+- Live coding example: matrix operations
+
+** Implementation Details (1.5 minutes)
+- Integration with existing WASM toolchain
+- Performance benchmarks vs. JavaScript
+- Memory management considerations
+
+** Future Directions (1 minute)
+- WASM GC integration
+- Streaming compilation
+- Community adoption path
+
+* Code Examples
+
+#+BEGIN_SRC lisp :tangle demo.lisp
+(defmacro wasm-lambda (args &body body)
+  `(compile-to-wasm 
+     (lambda ,args 
+       ,@(optimize-for-wasm body))))
+#+END_SRC
+
+* Demo Script
+1. Show Lisp code
+2. Macro expansion
+3. Generated WASM
+4. Browser performance comparison

@@ -1,0 +1,47 @@
+#+TITLE: S-expressions as Infrastructure: Configuration Management with Lisp
+#+AUTHOR: aygp-dr
+#+DATE: <2025-05-24>
+#+PROPERTY: header-args :mkdirp yes
+
+* Talk Outline (5 minutes)
+
+** Current State of Infrastructure (1 minute)
+- YAML/JSON configuration hell
+- Duplication across environments
+- No abstraction or reuse
+
+** S-expressions as Solution (1.5 minutes)
+- Configuration as code, literally
+- Macros for environment abstraction
+- Functions for reusable components
+
+** Live Demo (2 minutes)
+- Transform infrastructure config
+- Show macro expansion
+- Deploy to cloud provider
+
+** Benefits Realized (30s)
+- 70% reduction in config files
+- Type safety at compile time
+- Programmable infrastructure
+
+* Example Configuration
+
+#+BEGIN_SRC lisp :tangle infra-config.lisp
+(defmacro define-environment (name &key cpu memory replicas)
+  `(list :name ,name
+         :resources (list :cpu ,cpu :memory ,memory)
+         :scaling (list :replicas ,replicas)))
+
+(define-environment production
+  :cpu "2000m"
+  :memory "4Gi" 
+  :replicas 3)
+#+END_SRC
+
+* Demo Flow
+1. Show traditional YAML
+2. Equivalent Lisp version
+3. Add abstraction layer
+4. Generate multiple environments
+5. Deploy with single command

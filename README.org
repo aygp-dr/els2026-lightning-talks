@@ -1,0 +1,52 @@
+#+TITLE: ELS 2026 Lightning Talk Proposals
+#+AUTHOR: aygp-dr
+#+DATE: <2025-05-24>
+#+PROPERTY: header-args :mkdirp yes
+
+* Overview
+
+This repository contains five lightning talk proposals for the European Lisp Symposium 2026, based on research of typical ELS presentations and current trends in the Lisp community.
+
+* Talk Proposals
+
+** 1. Lisp Macros Meet WebAssembly
+- *Focus:* Compile-time macro generation of optimized WebAssembly
+- *Type:* Technical demonstration
+- *Directory:* =talk1-lisp-macros-webassembly/=
+
+** 2. Teaching Old REPLs New Tricks
+- *Focus:* Interactive debugging in distributed Lisp systems
+- *Type:* Experience report
+- *Directory:* =talk2-distributed-repl-debugging/=
+
+** 3. S-expressions as Infrastructure
+- *Focus:* Configuration management with Lisp metaprogramming
+- *Type:* Demonstration
+- *Directory:* =talk3-sexp-infrastructure/=
+
+** 4. The Functional Approach to Machine Learning
+- *Focus:* Pure functional neural networks in Scheme
+- *Type:* Research preview
+- *Directory:* =talk4-functional-ml-scheme/=
+
+** 5. Racket in the Wild
+- *Focus:* Real-world DSLs for scientific computing
+- *Type:* Experience report
+- *Directory:* =talk5-racket-scientific-dsls/=
+
+* Project Structure
+
+Each talk has its own directory containing:
+- =outline.org= - Detailed talk outline with timing
+- Code examples and demos
+- Presentation materials
+
+* ELS Conference Context
+
+Based on the ELS 2025 program, lightning talks are 5-minute presentations that cover:
+- Technical innovations
+- Experience reports
+- Demonstrations
+- Research previews
+
+The talks align with ELS themes of language design, practical applications, AI integration, and novel programming paradigms.

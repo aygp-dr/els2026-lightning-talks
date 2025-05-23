@@ -1,0 +1,69 @@
+#+TITLE: Racket in the Wild: Real-world Domain-Specific Languages for Scientific Computing
+#+AUTHOR: aygp-dr
+#+DATE: <2025-05-24>
+#+PROPERTY: header-args :mkdirp yes
+
+* Talk Outline (5 minutes)
+
+** Scientific Computing Challenges (1 minute)
+- Domain experts aren't programmers
+- Complex data transformation pipelines
+- Need for domain-specific abstractions
+
+** Racket's Language-Oriented Programming (1.5 minutes)
+- Create languages, not just libraries
+- Syntax transformation capabilities
+- Gradual typing for performance
+
+** Bioinformatics DSL Case Study (2 minutes)
+- Gene sequence analysis language
+- Pipeline composition syntax
+- Integration with existing tools
+
+** Impact and Adoption (30s)
+- Researcher productivity gains
+- Error reduction through domain types
+- Performance comparable to C++
+
+** Lessons for Other Domains (30s)
+- When to create a DSL
+- Design principles
+- Community building
+
+* DSL Syntax Example
+
+#+BEGIN_SRC racket :tangle bio-dsl.rkt
+#lang bio-pipeline
+
+(define-pipeline genome-analysis
+  (read-fasta "input.fa")
+  (quality-filter threshold: 30)
+  (align-to reference-genome)
+  (call-variants confidence: 0.95)
+  (annotate-genes)
+  (output "results.vcf"))
+
+(run-pipeline genome-analysis
+  #:parallel-workers 8
+  #:memory-limit "16GB")
+#+END_SRC
+
+* Language Implementation
+
+#+BEGIN_SRC racket :tangle bio-lang.rkt
+#lang racket
+
+(define-syntax-rule (define-pipeline name step ...)
+  (define name
+    (pipeline-compose step ...)))
+
+(define-syntax-rule (read-fasta file)
+  (make-step 'read-fasta file))
+#+END_SRC
+
+* Performance Comparison
+| Tool | Time (min) | Memory (GB) | Lines of Code |
+|------+------------+-------------+---------------|
+| C++  | 45         | 12          | 2,500         |
+| Python | 120      | 18          | 800           |
+| Our DSL | 48       | 10          | 150           |

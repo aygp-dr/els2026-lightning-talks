@@ -1,0 +1,23 @@
+#+TITLE: ELS 2026 Lightning Talk Development Timeline
+#+AUTHOR: Your Name
+
+* Phase 1: Exploration [2025-05 to 2025-08]
+** TODO Initial research for all five concepts
+** TODO Create proof of concept code for most promising 2-3 ideas
+** TODO Evaluate technical feasibility
+
+* Phase 2: Development [2025-09 to 2025-12]
+** TODO Develop functional prototypes for top 3 candidates
+** TODO Create initial demo scripts
+** TODO Gather peer feedback
+
+* Phase 3: Selection [2026-01 to 2026-02]
+** TODO Evaluate all candidates against selection criteria
+** TODO Select final presentation(s)
+** TODO Plan final implementation details
+
+* Phase 4: Refinement [2026-02 to 2026-04]
+** TODO Complete implementation and polish demo
+** TODO Create and refine slides
+** TODO Rehearse presentation
+** TODO Submit proposal to ELS 2026

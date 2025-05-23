@@ -1,0 +1,49 @@
+#+TITLE: Bidirectional Code Generation with Lisp and LLMs
+#+AUTHOR: Your Name
+#+DATE: ELS 2026
+
+* Concept Overview
+  :PROPERTIES:
+  :PROGRESS: [0/5]
+  :END:
+  - [ ] Define key terms and concepts
+  - [ ] Clarify the innovation
+  - [ ] Identify limitations in current approaches
+  - [ ] Explain benefits of bidirectional approach
+  - [ ] Outline potential applications
+  
+* Implementation Plan
+  :PROPERTIES:
+  :PROGRESS: [0/4]
+  :END:
+  - [ ] Core API design
+  - [ ] LLM integration
+  - [ ] Parser development
+  - [ ] Evaluation component
+  
+* Demo Script
+  :PROPERTIES:
+  :PROGRESS: [0/3]
+  :END:
+  - [ ] Initial setup
+  - [ ] Key interaction points
+  - [ ] Wow moment
+  
+* Slide Outline
+  :PROPERTIES:
+  :PROGRESS: [0/5]
+  :END:
+  - [ ] Introduction
+  - [ ] Problem statement
+  - [ ] Technical approach
+  - [ ] Demo
+  - [ ] Conclusion
+  
+* Key Points to Convey
+  1. Lisp's symbolic expressions are ideal for AI communication
+  2. Bidirectional flow enables self-improving systems
+  3. Real-world applications
+  
+* References & Resources
+
+* Feedback & Iterations

@@ -1,0 +1,54 @@
+#+TITLE: Teaching Old REPLs New Tricks: Interactive Debugging in Distributed Lisp Systems
+#+AUTHOR: aygp-dr
+#+DATE: <2025-05-24>
+#+PROPERTY: header-args :mkdirp yes
+
+* Talk Outline (5 minutes)
+
+** Problem Statement (45s)
+- Debugging microservices is painful
+- Traditional debugging breaks in distributed systems
+- Need for live, interactive debugging
+
+** Solution Overview (1.5 minutes)
+- Remote REPL architecture
+- Service discovery integration
+- Live code patching in production
+
+** Technical Implementation (2 minutes)
+- nREPL protocol extensions
+- Security considerations
+- State synchronization across instances
+
+** Real-world Examples (45s)
+- Bug fix without deployment
+- Performance tuning in production
+- A/B testing with code variants
+
+** Lessons Learned (30s)
+- When to use vs. avoid
+- Team adoption strategies
+- Monitoring and safety rails
+
+* Architecture Diagram
+
+#+BEGIN_SRC mermaid :file distributed-repl-arch.png
+graph TD
+    A[Developer REPL] -->|nREPL| B[Gateway Service]
+    B --> C[Service A]
+    B --> D[Service B] 
+    B --> E[Service C]
+    C --> F[Database]
+    D --> F
+    E --> F
+#+END_SRC
+
+* Code Examples
+
+#+BEGIN_SRC clojure :tangle remote-repl.clj
+(defn start-remote-repl [port service-id]
+  (nrepl/start-server 
+    :port port
+    :middleware [#'distributed-debug/middleware]
+    :bind "0.0.0.0"))
+#+END_SRC

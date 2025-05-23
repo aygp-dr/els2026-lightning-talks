@@ -1,0 +1,12 @@
+#+TITLE: ELS 2026 Development Journal
+#+AUTHOR: Your Name
+#+DATE: 2025-05-23
+
+* 2025-05-21 Project Initialization
+- Set up repository structure
+- Outlined initial concepts for all five presentations
+
+* TODO Next Steps
+- Research previous ELS lightning talks on similar topics
+- Investigate current state of Lisp/LLM integration
+- Explore libraries for REPL observability

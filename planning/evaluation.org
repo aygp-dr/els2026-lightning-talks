@@ -1,0 +1,31 @@
+#+TITLE: Evaluation Criteria for ELS 2026 Presentations
+#+AUTHOR: Your Name
+
+* Selection Criteria
+| Criterion | Weight | Description |
+|-----------|--------|-------------|
+| Novelty | 5 | How original is the idea in the Lisp community? |
+| Impact | 4 | How useful would this be to Lisp practitioners? |
+| Demo Quality | 5 | How impressive and illustrative is the demo? |
+| Implementation Completeness | 3 | How fully implemented is the concept? |
+| Presentation Clarity | 4 | How clearly can the idea be communicated in 5 minutes? |
+
+* Evaluation Rubric
+** 5: Exceptional - Groundbreaking, complete, impressive
+** 4: Very Good - Novel, mostly complete, clear
+** 3: Good - Interesting, functional, understandable
+** 2: Fair - Derivative, partially implemented, somewhat unclear
+** 1: Poor - Common, barely implemented, confusing
+
+* Presentation Evaluation Template
+
+** Bidirectional Code Generation
+- Novelty: [Score]
+- Impact: [Score]
+- Demo Quality: [Score]
+- Implementation Completeness: [Score]
+- Presentation Clarity: [Score]
+- Total Weighted Score: [Calculated]
+- Notes:
+
+[Repeat for other presentations]

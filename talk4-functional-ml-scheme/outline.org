@@ -1,0 +1,63 @@
+#+TITLE: The Functional Approach to Machine Learning: Building Neural Networks in Pure Scheme
+#+AUTHOR: aygp-dr
+#+DATE: <2025-05-24>
+#+PROPERTY: header-args :mkdirp yes
+
+* Talk Outline (5 minutes)
+
+** Motivation (45s)
+- ML frameworks are imperative and stateful
+- Functional programming principles in ML
+- Pure functions for neural computation
+
+** Core Design (2 minutes)
+- Immutable tensors
+- Functional composition of layers
+- Tail-call optimized backpropagation
+
+** Implementation Highlights (1.5 minutes)
+- Automatic differentiation in Scheme
+- Memory-efficient gradient computation
+- Parallel training with futures
+
+** Performance Results (45s)
+- Benchmark against TensorFlow
+- Memory usage comparison
+- Training convergence rates
+
+** Future Work (30s)
+- GPU acceleration
+- Distributed training
+- Integration with existing ML pipelines
+
+* Neural Network Example
+
+#+BEGIN_SRC scheme :tangle neural-net.scm
+(define (make-layer input-size output-size activation)
+  (lambda (weights biases)
+    (lambda (input)
+      (activation 
+        (vector-add biases
+          (matrix-multiply weights input))))))
+
+(define (compose-layers . layers)
+  (lambda (input)
+    (fold-left (lambda (acc layer) (layer acc)) 
+               input layers)))
+#+END_SRC
+
+* Automatic Differentiation
+
+#+BEGIN_SRC scheme :tangle autodiff.scm
+(define-record-type dual
+  (make-dual value derivative)
+  dual?
+  (value dual-value)
+  (derivative dual-derivative))
+
+(define (+ a b)
+  (if (and (dual? a) (dual? b))
+      (make-dual (+ (dual-value a) (dual-value b))
+                 (+ (dual-derivative a) (dual-derivative b)))
+      (+ a b)))
+#+END_SRC
