@@ -1,45 +1,101 @@
-#+TITLE: ELS 2026 Lightning Talk Proposals
+#+TITLE: ELS 2026 Lightning Talk Development
 #+AUTHOR: aygp-dr
 #+DATE: <2025-05-24>
 #+PROPERTY: header-args :mkdirp yes
 
 * Overview
 
-This repository contains five lightning talk proposals for the European Lisp Symposium 2026, based on research of typical ELS presentations and current trends in the Lisp community.
+Repository for developing potential lightning talks for the European Lisp Symposium 2026, based on research of typical ELS presentations and current trends in the Lisp community.
 
-* Talk Proposals
+* Progress Tracking
 
-** 1. Lisp Macros Meet WebAssembly
+| Talk | Concept | Code | Demo | Slides | Rehearsed | Notes |
+|------+---------+------+------+--------+-----------+-------|
+| Bidirectional Code Gen | 10% | 0% | 0% | 0% | 0% | Initial research phase |
+| REPL Observability | 10% | 0% | 0% | 0% | 0% | Initial research phase |
+| Incremental Types | 10% | 0% | 0% | 0% | 0% | Initial research phase |
+| Lisp Web Components | 10% | 0% | 0% | 0% | 0% | Initial research phase |
+| Protocol Programming | 10% | 0% | 0% | 0% | 0% | Initial research phase |
+
+* Presentation Development Structure
+
+** Setup Script Generated Talks (presentations/)
+*** 1. Bidirectional LLM-Lisp Integration
+- *Focus:* Two-way code generation between Lisp and LLMs
+- *Type:* Technical demonstration
+- *Directory:* =presentations/01-llm-lisp-bidirectional/=
+
+*** 2. REPL Observability
+- *Focus:* Advanced debugging and monitoring in interactive environments
+- *Type:* Experience report
+- *Directory:* =presentations/02-repl-observability/=
+
+*** 3. Incremental Types
+- *Focus:* Gradual typing systems for dynamic Lisp environments
+- *Type:* Research preview
+- *Directory:* =presentations/03-incremental-types/=
+
+*** 4. Lisp Web Components
+- *Focus:* Modern web development with Lisp-based component systems
+- *Type:* Demonstration
+- *Directory:* =presentations/04-lisp-web-components/=
+
+*** 5. Protocol Programming
+- *Focus:* Protocol-oriented design patterns in Lisp
+- *Type:* Experience report
+- *Directory:* =presentations/05-protocol-programming/=
+
+** Original Research Talks (talk*/)
+*** 1. Lisp Macros Meet WebAssembly
 - *Focus:* Compile-time macro generation of optimized WebAssembly
 - *Type:* Technical demonstration
 - *Directory:* =talk1-lisp-macros-webassembly/=
 
-** 2. Teaching Old REPLs New Tricks
+*** 2. Teaching Old REPLs New Tricks
 - *Focus:* Interactive debugging in distributed Lisp systems
 - *Type:* Experience report
 - *Directory:* =talk2-distributed-repl-debugging/=
 
-** 3. S-expressions as Infrastructure
+*** 3. S-expressions as Infrastructure
 - *Focus:* Configuration management with Lisp metaprogramming
 - *Type:* Demonstration
 - *Directory:* =talk3-sexp-infrastructure/=
 
-** 4. The Functional Approach to Machine Learning
+*** 4. The Functional Approach to Machine Learning
 - *Focus:* Pure functional neural networks in Scheme
 - *Type:* Research preview
 - *Directory:* =talk4-functional-ml-scheme/=
 
-** 5. Racket in the Wild
+*** 5. Racket in the Wild
 - *Focus:* Real-world DSLs for scientific computing
 - *Type:* Experience report
 - *Directory:* =talk5-racket-scientific-dsls/=
 
-* Project Structure
+* Repository Structure
 
-Each talk has its own directory containing:
-- =outline.org= - Detailed talk outline with timing
-- Code examples and demos
-- Presentation materials
+#+BEGIN_EXAMPLE
+els2026-lightning-talks/
+├── common/            # Shared resources
+├── presentations/     # Individual presentation folders (setup script)
+├── talk*/             # Original research talk outlines
+├── planning/          # Project planning documents
+├── scripts/           # Setup and utility scripts
+└── docs/              # Documentation
+#+END_EXAMPLE
+
+Each talk directory contains:
+- =outline.org= or =README.md= - Detailed talk outline with timing
+- =code/= - Code examples and demos
+- =notes/= - Development notes and research
+- =slides/= - Presentation materials
+
+* Timeline
+
+- **June 2025**: Initial research and concept development
+- **September 2025**: First code prototypes
+- **December 2025**: Narrow down to 2-3 strongest candidates
+- **February 2026**: Final selection and polish
+- **April 2026**: Submit final proposal(s) to ELS 2026
 
 * ELS Conference Context
 
@@ -50,3 +106,11 @@ Based on the ELS 2025 program, lightning talks are 5-minute presentations that c
 - Research previews
 
 The talks align with ELS themes of language design, practical applications, AI integration, and novel programming paradigms.
+
+* Development Notes
+
+This repository contains two complementary sets of lightning talk ideas:
+1. *Setup script talks* - Focus on modern integrations (LLMs, observability, web)
+2. *Research talks* - Focus on fundamental innovations (macros, functional ML, DSLs)
+
+Both sets will be developed in parallel, with the strongest candidates selected for final submission to ELS 2026.
