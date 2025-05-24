@@ -1,0 +1,1954 @@
+#+TITLE: ELS 2026 Lightning Talk Proposals
+#+AUTHOR: Your Name
+#+DATE: 2025-05-23
+#+OPTIONS: toc:2 num:t
+#+STARTUP: overview
+#+EXPORT_FILE_NAME: presentations.md
+
+* Introduction
+This document contains five lightning talk proposals for the European Lisp Symposium 2026. Each proposal includes technical details, implementation approaches, and demonstration scenarios.
+
+* Talk 1: Bidirectional Code Generation with Lisp and LLMs
+:PROPERTIES:
+:EXPORT_FILE_NAME: 01-bidirectional-llm.md
+:END:
+
+** Abstract
+Modern AI-assisted programming typically follows a unidirectional pattern: developers prompt LLMs to generate code. This talk introduces a bidirectional approach where Lisp systems can generate prompts for LLMs, evaluate responses, and create feedback loops that enable self-improving code generation. We demonstrate how Lisp's symbolic expressions provide an ideal foundation for structured AI communication.
+
+** Technical Approach
+
+*** Architecture Overview
+#+BEGIN_SRC mermaid :file images/bidirectional-architecture.png :exports both
+graph TD
+    A[Lisp REPL] -->|Generated Prompts| B[LLM API Gateway]
+    B -->|Code Completions| C[S-Expression Parser]
+    C -->|Validated Code| D[Dynamic Evaluator]
+    D -->|Execution Results| A
+    
+    E[Developer Input] -->|Constraints| A
+    F[Knowledge Base] -->|Context| B
+    D -->|Learning Updates| F
+    
+    G[Error Handler] -->|Refinement Requests| B
+    C -->|Parse Errors| G
+    D -->|Runtime Errors| G
+    
+    subgraph "Feedback Loop"
+        H[Pattern Recognition] --> I[Prompt Optimization]
+        I --> J[Quality Metrics]
+        J --> H
+    end
+    
+    D --> H
+#+END_SRC
+
+*** Core Components
+
+**** Prompt Generation Engine
+#+BEGIN_SRC lisp :tangle code/bidirectional-llm/prompt-engine.lisp :mkdirp t
+(defpackage :bidirectional-llm.prompt
+  (:use :cl)
+  (:export :generate-prompt
+           :contextualize-prompt
+           :optimize-prompt))
+
+(in-package :bidirectional-llm.prompt)
+
+(defclass prompt-context ()
+  ((function-signature :initarg :signature :accessor function-signature)
+   (docstring :initarg :docstring :accessor docstring)
+   (constraints :initarg :constraints :accessor constraints)
+   (examples :initarg :examples :accessor examples)
+   (failure-history :initarg :failures :accessor failure-history)))
+
+(defun generate-prompt (context &key (style :functional))
+  "Generate a structured prompt for LLM based on Lisp context"
+  (format nil "~A~%~A~%~A~%~A"
+          (format-signature (function-signature context))
+          (format-constraints (constraints context))
+          (format-examples (examples context))
+          (format-style-guidance style)))
+
+(defun format-signature (sig)
+  (format nil "Complete this Common Lisp function:~%~S" sig))
+
+(defun format-constraints (constraints)
+  (if constraints
+      (format nil "Constraints:~%~{- ~A~%~}" constraints)
+      ""))
+
+(defun format-examples (examples)
+  (if examples
+      (format nil "Examples:~%~{~A~%~}" 
+              (mapcar #'format-example examples))
+      ""))
+
+(defun format-example (example)
+  (format nil "(~A ~{~S~^ ~}) => ~S" 
+          (first example) (second example) (third example)))
+
+(defun optimize-prompt (prompt success-rate context)
+  "Adjust prompt based on success metrics"
+  (cond 
+    ((< success-rate 0.3) (add-more-context prompt context))
+    ((> success-rate 0.8) (simplify-prompt prompt))
+    (t prompt)))
+#+END_SRC
+
+**** Response Evaluator
+#+BEGIN_SRC lisp :tangle code/bidirectional-llm/evaluator.lisp :mkdirp t
+(defpackage :bidirectional-llm.eval
+  (:use :cl)
+  (:export :evaluate-response
+           :validate-syntax
+           :test-semantics
+           :quality-score))
+
+(in-package :bidirectional-llm.eval)
+
+(defstruct evaluation-result
+  syntax-valid-p
+  semantics-valid-p  
+  test-results
+  performance-metrics
+  quality-score
+  feedback)
+
+(defun evaluate-response (generated-code test-cases)
+  "Comprehensively evaluate LLM-generated code"
+  (let* ((syntax-valid (validate-syntax generated-code))
+         (semantics-valid (and syntax-valid 
+                               (test-semantics generated-code test-cases)))
+         (performance (when semantics-valid
+                        (measure-performance generated-code test-cases)))
+         (quality (calculate-quality-score 
+                   syntax-valid semantics-valid performance)))
+    
+    (make-evaluation-result
+     :syntax-valid-p syntax-valid
+     :semantics-valid-p semantics-valid
+     :test-results (when semantics-valid
+                     (run-test-cases generated-code test-cases))
+     :performance-metrics performance
+     :quality-score quality
+     :feedback (generate-feedback syntax-valid semantics-valid 
+                                  performance test-cases))))
+
+(defun validate-syntax (code-string)
+  "Check if generated code has valid Lisp syntax"
+  (handler-case
+      (progn (read-from-string code-string) t)
+    (error () nil)))
+
+(defun test-semantics (code test-cases)
+  "Test if generated code produces expected results"
+  (handler-case
+      (let ((func (eval (read-from-string code))))
+        (every (lambda (test-case)
+                 (equal (apply func (second test-case))
+                        (third test-case)))
+               test-cases))
+    (error () nil)))
+#+END_SRC
+
+** Demonstration Scenario
+
+*** Setup
+1. Present a partially implemented function with missing logic
+2. Show how the system generates contextual prompts
+3. Demonstrate LLM response evaluation and refinement
+
+*** Live Demo Code
+#+BEGIN_SRC lisp :tangle code/bidirectional-llm/demo.lisp :mkdirp t
+(defpackage :bidirectional-llm.demo
+  (:use :cl :bidirectional-llm.prompt :bidirectional-llm.eval))
+
+(in-package :bidirectional-llm.demo)
+
+;; Demo: Implementing a complex algorithm with AI assistance
+(defun fibonacci-with-memoization (n)
+  "Calculate nth Fibonacci number with memoization"
+  ;; AI TO COMPLETE: Implement efficient memoized version
+  )
+
+;; The system would generate this prompt:
+(defparameter *demo-context*
+  (make-instance 'prompt-context
+    :signature '(defun fibonacci-with-memoization (n))
+    :docstring "Calculate nth Fibonacci number with memoization"
+    :constraints '("Must use memoization for efficiency"
+                   "Handle edge cases (n <= 1)"
+                   "Time complexity should be O(n)")
+    :examples '((fibonacci-with-memoization 0) () 0)
+               ((fibonacci-with-memoization 1) () 1)
+               ((fibonacci-with-memoization 10) () 55))))
+
+;; Live demonstration of the bidirectional process
+(defun demonstrate-bidirectional-generation ()
+  "Show the complete bidirectional generation process"
+  (format t "~&=== Bidirectional Code Generation Demo ===~%")
+  
+  ;; Step 1: Generate prompt
+  (let ((prompt (generate-prompt *demo-context*)))
+    (format t "~&Generated Prompt:~%~A~%" prompt)
+    
+    ;; Step 2: Simulate LLM response (in real demo, call actual LLM)
+    (let* ((llm-response *sample-fibonacci-implementation*)
+           (evaluation (evaluate-response llm-response 
+                                        (examples *demo-context*))))
+      
+      ;; Step 3: Show evaluation results
+      (format t "~&Evaluation Results:~%")
+      (format t "Syntax Valid: ~A~%" (evaluation-result-syntax-valid-p evaluation))
+      (format t "Semantics Valid: ~A~%" (evaluation-result-semantics-valid-p evaluation))
+      (format t "Quality Score: ~A~%" (evaluation-result-quality-score evaluation))
+      
+      ;; Step 4: Show refinement if needed
+      (when (< (evaluation-result-quality-score evaluation) 0.8)
+        (format t "~&Generating refinement prompt...~%")
+        (let ((refined-prompt (refine-prompt prompt evaluation)))
+          (format t "Refined Prompt: ~A~%" refined-prompt))))))
+
+(defparameter *sample-fibonacci-implementation*
+  "(defun fibonacci-with-memoization (n)
+     (let ((memo (make-hash-table)))
+       (labels ((fib-helper (k)
+                  (cond ((< k 2) k)
+                        ((gethash k memo))
+                        (t (setf (gethash k memo)
+                                 (+ (fib-helper (1- k))
+                                    (fib-helper (- k 2))))))))
+         (fib-helper n))))")
+#+END_SRC
+
+** Key Innovation Points
+1. **Bidirectional Communication**: Unlike traditional one-way prompting
+2. **Structured Feedback Loops**: Automatic quality assessment and prompt refinement
+3. **Lisp-Native Integration**: Leverages s-expressions for structured AI communication
+4. **Self-Improving Systems**: Learns from successes and failures
+
+* Talk 2: REPL-Driven Observability for Distributed Lisp Systems
+:PROPERTIES:
+:EXPORT_FILE_NAME: 02-repl-observability.md
+:END:
+
+** Abstract
+Debugging distributed systems typically requires external monitoring tools that provide limited insight into runtime behavior. This talk demonstrates a REPL-driven observability system that leverages Lisp's introspection capabilities to provide live debugging across multiple nodes. We show how distributed Lisp systems can expose internal state through networked REPLs, enabling unprecedented visibility into distributed computation.
+
+** Technical Architecture
+
+#+BEGIN_SRC mermaid :file images/distributed-repl-architecture.png :exports both
+graph TB
+    subgraph "Development Environment"
+        A[Master REPL] --> B[Observability Dashboard]
+        A --> C[Distributed Debugger]
+    end
+    
+    subgraph "Production Cluster"
+        D[Node 1<br/>SWANK Server] --> E[Application Process 1]
+        F[Node 2<br/>SWANK Server] --> G[Application Process 2]  
+        H[Node 3<br/>SWANK Server] --> I[Application Process 3]
+    end
+    
+    subgraph "Monitoring Infrastructure"
+        J[Trace Collector] --> K[Event Store]
+        L[Metrics Aggregator] --> M[Time Series DB]
+        N[Log Processor] --> O[Search Index]
+    end
+    
+    A -.->|Remote REPL| D
+    A -.->|Remote REPL| F
+    A -.->|Remote REPL| H
+    
+    E --> J
+    G --> J  
+    I --> J
+    
+    E --> L
+    G --> L
+    I --> L
+    
+    B --> K
+    B --> M
+    C --> K
+#+END_SRC
+
+** Core Implementation
+
+*** Distributed REPL Manager
+#+BEGIN_SRC lisp :tangle code/repl-observability/distributed-repl.lisp :mkdirp t
+(defpackage :repl-observability.distributed
+  (:use :cl)
+  (:export :distributed-repl-manager
+           :connect-to-cluster
+           :evaluate-on-all-nodes
+           :inspect-node-state
+           :trace-distributed-call))
+
+(in-package :repl-observability.distributed)
+
+(defclass distributed-repl-manager ()
+  ((connections :initform (make-hash-table :test 'equal)
+                :accessor connections)
+   (node-metadata :initform (make-hash-table :test 'equal)
+                  :accessor node-metadata)
+   (active-traces :initform '() :accessor active-traces)))
+
+(defun connect-to-cluster (manager cluster-config)
+  "Establish REPL connections to all nodes in cluster"
+  (dolist (node-config cluster-config)
+    (let* ((host (getf node-config :host))
+           (port (getf node-config :port))
+           (name (getf node-config :name))
+           (connection (establish-swank-connection host port)))
+      
+      (setf (gethash name (connections manager)) connection)
+      (setf (gethash name (node-metadata manager))
+            (list :host host :port port :connected-at (get-universal-time)
+                  :status :connected))
+      
+      (format t "Connected to node ~A at ~A:~A~%" name host port))))
+
+(defun evaluate-on-all-nodes (manager expression)
+  "Evaluate expression on all connected nodes and collect results"
+  (let ((results (make-hash-table :test 'equal)))
+    (maphash (lambda (node-name connection)
+               (handler-case
+                   (let ((result (swank-eval expression connection)))
+                     (setf (gethash node-name results) 
+                           (list :status :success :result result)))
+                 (error (e)
+                   (setf (gethash node-name results)
+                         (list :status :error :error (princ-to-string e))))))
+             (connections manager))
+    results))
+
+(defun inspect-node-state (manager node-name &key (depth 1))
+  "Deep inspection of a specific node's runtime state"
+  (let ((connection (gethash node-name (connections manager))))
+    (unless connection
+      (error "No connection to node ~A" node-name))
+    
+    (swank-eval 
+     `(list :threads (list-all-threads)
+            :memory (room)
+            :packages (list-all-packages)
+            :active-calls (get-active-function-calls)
+            :global-variables (get-global-variables ,depth))
+     connection)))
+
+(defun trace-distributed-call (manager function-name)
+  "Set up distributed tracing for a function across all nodes"
+  (let ((trace-id (generate-trace-id)))
+    (maphash (lambda (node-name connection)
+               (swank-eval 
+                `(setup-distributed-trace ',function-name ',trace-id)
+                connection))
+             (connections manager))
+    
+    (push (list :trace-id trace-id 
+                :function function-name
+                :started-at (get-universal-time))
+          (active-traces manager))
+    
+    trace-id))
+#+END_SRC
+
+*** Real-time State Inspector
+#+BEGIN_SRC lisp :tangle code/repl-observability/state-inspector.lisp :mkdirp t
+(defpackage :repl-observability.inspector
+  (:use :cl)
+  (:export :real-time-inspector
+           :watch-variable
+           :monitor-function-calls
+           :track-memory-usage))
+
+(in-package :repl-observability.inspector)
+
+(defclass real-time-inspector ()
+  ((watched-variables :initform '() :accessor watched-variables)
+   (monitored-functions :initform '() :accessor monitored-functions)
+   (update-interval :initarg :interval :initform 1.0 :accessor update-interval)
+   (event-stream :initform (make-event-stream) :accessor event-stream)))
+
+(defun watch-variable (inspector var-symbol &key (node :all))
+  "Watch a variable for changes across nodes"
+  (let ((watch-spec (list :variable var-symbol 
+                          :node node
+                          :last-value nil
+                          :change-count 0)))
+    (push watch-spec (watched-variables inspector))
+    
+    ;; Set up change detection
+    (schedule-variable-check inspector watch-spec)))
+
+(defun monitor-function-calls (inspector function-name &key (collect-args t))
+  "Monitor all calls to a specific function"
+  (let ((monitor-spec (list :function function-name
+                            :collect-args collect-args
+                            :call-count 0
+                            :total-time 0
+                            :recent-calls (make-ring-buffer 100))))
+    
+    (push monitor-spec (monitored-functions inspector))
+    
+    ;; Install function wrapper for monitoring
+    (wrap-function-for-monitoring function-name monitor-spec)))
+
+(defun wrap-function-for-monitoring (function-name monitor-spec)
+  "Wrap a function to collect call statistics"
+  (let ((original-function (symbol-function function-name)))
+    (setf (symbol-function function-name)
+          (lambda (&rest args)
+            (let ((start-time (get-internal-real-time))
+                  (result nil))
+              
+              ;; Record call start
+              (record-function-call-start monitor-spec args)
+              
+              (unwind-protect
+                   (setf result (apply original-function args))
+                
+                ;; Record call completion
+                (let ((duration (- (get-internal-real-time) start-time)))
+                  (record-function-call-end monitor-spec result duration)))
+              
+              result)))))
+
+(defun generate-observability-report (inspector)
+  "Generate comprehensive observability report"
+  (list :timestamp (get-universal-time)
+        :watched-variables (mapcar #'variable-status 
+                                   (watched-variables inspector))
+        :monitored-functions (mapcar #'function-statistics
+                                     (monitored-functions inspector))
+        :system-metrics (collect-system-metrics)
+        :network-topology (analyze-network-topology)))
+#+END_SRC
+
+** Live Demonstration
+
+*** Demo Scenario: Distributed Map-Reduce
+#+BEGIN_SRC lisp :tangle code/repl-observability/demo-mapreduce.lisp :mkdirp t
+(defpackage :repl-observability.demo
+  (:use :cl :repl-observability.distributed :repl-observability.inspector))
+
+(in-package :repl-observability.demo)
+
+;; Simulate a distributed map-reduce operation
+(defun demo-distributed-mapreduce ()
+  "Demonstrate REPL-driven observability during map-reduce"
+  (let ((manager (make-instance 'distributed-repl-manager))
+        (inspector (make-instance 'real-time-inspector)))
+    
+    ;; Connect to simulated cluster
+    (connect-to-cluster manager
+                        '((:name "worker-1" :host "localhost" :port 4005)
+                          (:name "worker-2" :host "localhost" :port 4006)
+                          (:name "worker-3" :host "localhost" :port 4007)))
+    
+    ;; Set up monitoring
+    (watch-variable inspector '*current-chunk* :node :all)
+    (monitor-function-calls inspector 'process-chunk)
+    (trace-distributed-call manager 'reduce-results)
+    
+    ;; Execute distributed computation
+    (format t "~&Starting distributed word count...~%")
+    
+    ;; Map phase - distribute work
+    (let ((chunks '(("the quick brown" "fox jumps over")
+                    ("the lazy dog" "sleeps soundly")
+                    ("quick brown fox" "runs very fast"))))
+      
+      (evaluate-on-all-nodes manager
+                             `(defun process-chunk (chunk)
+                                (setf *current-chunk* chunk)
+                                (mapcar (lambda (word) (list word 1))
+                                        (split-string chunk))))
+      
+      ;; Show real-time monitoring
+      (dotimes (i 3)
+        (sleep 1)
+        (format t "~&=== Monitoring Update ~A ===~%" (1+ i))
+        (show-current-state manager inspector))
+      
+      ;; Reduce phase
+      (format t "~&Starting reduce phase...~%")
+      (let ((results (evaluate-on-all-nodes manager
+                                            '(reduce-local-results))))
+        (format t "~&Final Results: ~A~%" results)))))
+
+(defun show-current-state (manager inspector)
+  "Display current state across all nodes"
+  (format t "Node Status:~%")
+  (maphash (lambda (node-name connection)
+             (let ((state (inspect-node-state manager node-name)))
+               (format t "  ~A: ~A active threads, processing: ~A~%"
+                       node-name
+                       (length (getf state :threads))
+                       (getf state :current-chunk))))
+           (connections manager))
+  
+  (format t "Function Call Statistics:~%")
+  (dolist (monitor (monitored-functions inspector))
+    (format t "  ~A: ~A calls, avg time: ~Ams~%"
+            (getf monitor :function)
+            (getf monitor :call-count)
+            (if (> (getf monitor :call-count) 0)
+                (/ (getf monitor :total-time) (getf monitor :call-count))
+                0))))
+#+END_SRC
+
+** Key Benefits
+1. **Live Introspection**: Real-time access to distributed system state
+2. **Interactive Debugging**: Modify running systems through REPL
+3. **Contextual Monitoring**: Lisp-native observability without external tools
+4. **Distributed Tracing**: Follow computation across multiple nodes
+
+* Talk 3: Incremental Type Inference for Common Lisp
+:PROPERTIES:
+:EXPORT_FILE_NAME: 03-incremental-types.md
+:END:
+
+** Abstract
+Common Lisp's dynamic nature often leads to a trade-off between flexibility and type safety. This talk presents an incremental type inference system that builds type information during development without sacrificing Lisp's dynamism. The system provides optional static analysis while preserving runtime flexibility, offering the best of both worlds for Lisp development.
+
+** Type System Architecture
+
+#+BEGIN_SRC mermaid :file images/incremental-type-system.png :exports both
+graph TD
+    subgraph "Development Environment"
+        A[Source Code] --> B[Incremental Parser]
+        B --> C[Type Inference Engine]
+        C --> D[Type Database]
+        D --> E[IDE Integration]
+    end
+    
+    subgraph "Inference Engine"
+        F[Constraint Solver] --> G[Unification Algorithm]
+        G --> H[Type Specialization]
+        H --> I[Polymorphic Types]
+    end
+    
+    subgraph "Runtime Integration"  
+        J[Dynamic Checks] --> K[Type Violations]
+        K --> L[Feedback Loop]
+        L --> C
+    end
+    
+    C --> F
+    A --> J
+    E --> M[Developer Feedback]
+    M --> A
+    
+    subgraph "Type Information"
+        N[Primitive Types] --> O[Composite Types]
+        O --> P[Function Types]
+        P --> Q[Generic Types]
+    end
+    
+    D --> N
+#+END_SRC
+
+** Core Type Inference Implementation
+
+*** Type Environment and Constraints
+#+BEGIN_SRC lisp :tangle code/incremental-types/type-env.lisp :mkdirp t
+(defpackage :incremental-types.env
+  (:use :cl)
+  (:export :type-environment
+           :add-type-constraint
+           :infer-expression-type
+           :resolve-type-variables))
+
+(in-package :incremental-types.env)
+
+(defclass type-environment ()
+  ((bindings :initform (make-hash-table) :accessor bindings)
+   (constraints :initform '() :accessor constraints)
+   (type-variables :initform 0 :accessor type-variables)
+   (specialized-functions :initform (make-hash-table) :accessor specialized-functions)))
+
+(defstruct type-constraint
+  left-type
+  right-type
+  context
+  confidence)
+
+(defstruct inferred-type
+  base-type
+  constraints
+  confidence
+  source-location)
+
+(defun fresh-type-variable (env)
+  "Generate a fresh type variable"
+  (let ((var-id (incf (type-variables env))))
+    (intern (format nil "T~A" var-id) :keyword)))
+
+(defun add-type-constraint (env left right &key context (confidence 1.0))
+  "Add a type constraint to the environment"
+  (push (make-type-constraint :left-type left
+                              :right-type right
+                              :context context
+                              :confidence confidence)
+        (constraints env)))
+
+(defun infer-expression-type (env expression)
+  "Infer the type of an expression in the given environment"
+  (typecase expression
+    (integer (make-inferred-type :base-type 'integer :confidence 1.0))
+    (string (make-inferred-type :base-type 'string :confidence 1.0))
+    (symbol (infer-symbol-type env expression))
+    (cons (infer-compound-expression env expression))
+    (t (make-inferred-type :base-type 't :confidence 0.1))))
+
+(defun infer-symbol-type (env symbol)
+  "Infer the type of a symbol reference"
+  (cond
+    ;; Check local bindings first
+    ((gethash symbol (bindings env))
+     (gethash symbol (bindings env)))
+    
+    ;; Check global function definitions
+    ((fboundp symbol)
+     (infer-function-type env symbol))
+    
+    ;; Check global variable definitions
+    ((boundp symbol)
+     (infer-variable-type env symbol))
+    
+    ;; Unknown symbol - create type variable
+    (t (let ((type-var (fresh-type-variable env)))
+         (setf (gethash symbol (bindings env))
+               (make-inferred-type :base-type type-var :confidence 0.5))))))
+
+(defun infer-compound-expression (env expression)
+  "Infer type of compound expressions (function calls, etc.)"
+  (let ((operator (first expression))
+        (args (rest expression)))
+    
+    (case operator
+      ;; Arithmetic operations
+      ((+ - * /)
+       (let ((arg-types (mapcar (lambda (arg) 
+                                  (infer-expression-type env arg))
+                                args)))
+         (infer-arithmetic-type arg-types)))
+      
+      ;; Conditional expressions
+      (if (infer-conditional-type env args))
+      
+      ;; Let bindings
+      (let (infer-let-type env args))
+      
+      ;; Function definitions
+      (defun (infer-defun-type env args))
+      
+      ;; Function calls
+      (t (infer-function-call-type env operator args)))))
+
+(defun infer-arithmetic-type (arg-types)
+  "Infer result type of arithmetic operations"
+  (let ((numeric-types '(integer rational single-float double-float number)))
+    (cond
+      ;; All integers -> integer
+      ((every (lambda (type) 
+                (subtypep (inferred-type-base-type type) 'integer))
+              arg-types)
+       (make-inferred-type :base-type 'integer :confidence 0.9))
+      
+      ;; Any floats -> float
+      ((some (lambda (type)
+               (subtypep (inferred-type-base-type type) 'float))
+             arg-types)
+       (make-inferred-type :base-type 'number :confidence 0.8))
+      
+      ;; General numeric
+      (t (make-inferred-type :base-type 'number :confidence 0.7)))))
+#+END_SRC
+
+*** Incremental Analysis Engine
+#+BEGIN_SRC lisp :tangle code/incremental-types/analyzer.lisp :mkdirp t
+(defpackage :incremental-types.analyzer
+  (:use :cl :incremental-types.env)
+  (:export :incremental-analyzer
+           :analyze-file
+           :update-analysis
+           :get-type-information))
+
+(in-package :incremental-types.analyzer)
+
+(defclass incremental-analyzer ()
+  ((file-environments :initform (make-hash-table :test 'equal)
+                      :accessor file-environments)
+   (dependency-graph :initform (make-hash-table :test 'equal)
+                     :accessor dependency-graph)
+   (analysis-cache :initform (make-hash-table :test 'equal)
+                   :accessor analysis-cache)
+   (change-timestamps :initform (make-hash-table :test 'equal)
+                      :accessor change-timestamps)))
+
+(defun analyze-file (analyzer filepath)
+  "Perform complete type analysis of a file"
+  (let ((env (make-instance 'type-environment))
+        (forms (read-file-forms filepath)))
+    
+    ;; Process each top-level form
+    (dolist (form forms)
+      (analyze-top-level-form env form))
+    
+    ;; Resolve type constraints
+    (resolve-constraints env)
+    
+    ;; Cache results
+    (setf (gethash filepath (file-environments analyzer)) env)
+    (setf (gethash filepath (change-timestamps analyzer)) 
+          (file-write-date filepath))
+    
+    env))
+
+(defun update-analysis (analyzer filepath &key (incremental t))
+  "Update analysis for a changed file"
+  (let ((last-timestamp (gethash filepath (change-timestamps analyzer)))
+        (current-timestamp (file-write-date filepath)))
+    
+    (when (or (null last-timestamp)
+              (> current-timestamp last-timestamp))
+      
+      (if incremental
+          (incremental-reanalysis analyzer filepath)
+          (analyze-file analyzer filepath)))))
+
+(defun incremental-reanalysis (analyzer filepath)
+  "Perform incremental reanalysis of changed file"
+  (let* ((old-env (gethash filepath (file-environments analyzer)))
+         (new-forms (read-file-forms filepath))
+         (changed-forms (identify-changed-forms old-env new-forms)))
+    
+    ;; Only reanalyze changed forms and their dependencies
+    (dolist (form changed-forms)
+      (let ((affected-symbols (find-affected-symbols form)))
+        (invalidate-dependent-analyses analyzer affected-symbols)
+        (reanalyze-form old-env form)))
+    
+    ;; Update timestamps
+    (setf (gethash filepath (change-timestamps analyzer))
+          (file-write-date filepath))))
+
+(defun get-type-information (analyzer symbol &optional filepath)
+  "Get inferred type information for a symbol"
+  (let ((env (if filepath
+                 (gethash filepath (file-environments analyzer))
+                 (find-symbol-environment analyzer symbol))))
+    
+    (when env
+      (gethash symbol (bindings env)))))
+
+(defun generate-type-report (analyzer &key (confidence-threshold 0.7))
+  "Generate a comprehensive type analysis report"
+  (let ((report '()))
+    (maphash (lambda (filepath env)
+               (let ((file-report (analyze-file-types env confidence-threshold)))
+                 (when file-report
+                   (push (cons filepath file-report) report))))
+             (file-environments analyzer))
+    report))
+#+END_SRC
+
+*** Type-Guided Optimization
+#+BEGIN_SRC lisp :tangle code/incremental-types/optimizer.lisp :mkdirp t
+(defpackage :incremental-types.optimizer
+  (:use :cl :incremental-types.env :incremental-types.analyzer)
+  (:export :optimize-with-types
+           :generate-specialized-functions
+           :suggest-type-declarations))
+
+(in-package :incremental-types.optimizer)
+
+(defun optimize-with-types (analyzer function-name)
+  "Generate optimized version of function using type information"
+  (let* ((env (find-function-environment analyzer function-name))
+         (func-type (get-type-information analyzer function-name))
+         (specialized-versions '()))
+    
+    (when (and env func-type)
+      ;; Generate specialized versions for common type patterns
+      (let ((call-patterns (analyze-call-patterns env function-name)))
+        (dolist (pattern call-patterns)
+          (let ((specialized-func (specialize-function function-name pattern)))
+            (push specialized-func specialized-versions)))))
+    
+    specialized-versions))
+
+(defun specialize-function (function-name type-pattern)
+  "Create a specialized version of a function for specific types"
+  (let* ((original-definition (get-function-definition function-name))
+         (specialized-name (generate-specialized-name function-name type-pattern))
+         (specialized-body (optimize-function-body original-definition type-pattern)))
+    
+    `(defun ,specialized-name ,(second original-definition)
+       (declare ,@(generate-type-declarations type-pattern))
+       ,@specialized-body)))
+
+(defun suggest-type-declarations (analyzer function-name)
+  "Suggest type declarations based on inferred types"
+  (let* ((env (find-function-environment analyzer function-name))
+         (func-info (analyze-function-usage env function-name)))
+    
+    (when func-info
+      (let ((param-types (getf func-info :parameter-types))
+            (return-type (getf func-info :return-type)))
+        
+        (append
+         ;; Parameter type declarations
+         (mapcar (lambda (param type)
+                   `(type ,(inferred-type-base-type type) ,param))
+                 (getf func-info :parameters)
+                 param-types)
+         
+         ;; Return type declaration
+         (when (> (inferred-type-confidence return-type) 0.8)
+           `((values ,(inferred-type-base-type return-type)))))))))
+#+END_SRC
+
+** Demonstration: Real-time Type Inference
+
+*** Interactive Demo
+#+BEGIN_SRC lisp :tangle code/incremental-types/demo.lisp :mkdirp t
+(defpackage :incremental-types.demo
+  (:use :cl :incremental-types.env :incremental-types.analyzer))
+
+(in-package :incremental-types.demo)
+
+(defun demo-incremental-inference ()
+  "Demonstrate incremental type inference"
+  (let ((analyzer (make-instance 'incremental-analyzer)))
+    
+    (format t "=== Incremental Type Inference Demo ===~%~%")
+    
+    ;; Step 1: Initial function definition
+    (format t "1. Defining initial function:~%")
+    (let ((initial-code '(defun process-data (x)
+                           (if (numberp x)
+                               (* x 2)
+                               (length x)))))
+      
+      (format t "~S~%" initial-code)
+      (analyze-expression analyzer initial-code)
+      (show-inferred-types analyzer 'process-data))
+    
+    ;; Step 2: Add usage examples
+    (format t "~%2. Adding usage examples:~%")
+    (let ((usage-examples '((process-data 42)
+                           (process-data "hello")
+                           (process-data '(1 2 3)))))
+      
+      (dolist (example usage-examples)
+        (format t "~S~%" example)
+        (analyze-expression analyzer example))
+      
+      (show-inferred-types analyzer 'process-data))
+    
+    ;; Step 3: Function modification
+    (format t "~%3. Modifying function:~%")
+    (let ((modified-code '(defun process-data (x)
+                            (cond
+                              ((numberp x) (* x x))  ; Changed: square instead of double
+                              ((stringp x) (length x))
+                              ((listp x) (apply #'+ x))  ; New: sum list elements
+                              (t 0)))))
+      
+      (format t "~S~%" modified-code)
+      (update-function-analysis analyzer 'process-data modified-code)
+      (show-inferred-types analyzer 'process-data))
+    
+    ;; Step 4: Show optimization suggestions
+    (format t "~%4. Optimization suggestions:~%")
+    (let ((suggestions (suggest-type-declarations analyzer 'process-data)))
+      (format t "Suggested declarations: ~S~%" suggestions))
+    
+    ;; Step 5: Generate specialized versions
+    (format t "~%5. Generated specialized functions:~%")
+    (let ((specialized (optimize-with-types analyzer 'process-data)))
+      (dolist (spec specialized)
+        (format t "~S~%" spec)))))
+
+(defun show-inferred-types (analyzer symbol)
+  "Display inferred type information for a symbol"
+  (let ((type-info (get-type-information analyzer symbol)))
+    (when type-info
+      (format t "Inferred type for ~A: ~A (confidence: ~,2f)~%"
+              symbol
+              (inferred-type-base-type type-info)
+              (inferred-type-confidence type-info))
+      
+      (when (inferred-type-constraints type-info)
+        (format t "  Constraints: ~A~%"
+                (inferred-type-constraints type-info))))))
+#+END_SRC
+
+** Key Features
+1. **Non-intrusive**: Works with existing Lisp code without modifications
+2. **Incremental**: Updates type information as code changes
+3. **Confidence-based**: Provides confidence scores for inferred types
+4. **Optimization-friendly**: Generates specialized functions and type declarations
+
+* Talk 4: Lisp Web Components - Isomorphic Lisp for Frontend and Backend
+:PROPERTIES:
+:EXPORT_FILE_NAME: 04-lisp-web-components.md
+:END:
+
+** Abstract
+Modern web development suffers from context switching between frontend JavaScript and backend languages. This talk introduces Lisp Web Components (LWC), a system enabling isomorphic Lisp development where the same code runs on both client and server. We demonstrate how S-expressions can represent DOM structures, handle events, and manage state across the full stack.
+
+** Isomorphic Architecture
+
+#+BEGIN_SRC mermaid :file images/isomorphic-lisp-architecture.png :exports both
+graph TB
+    subgraph "Development Environment"
+        A[Lisp Source Code] --> B[LWC Compiler]
+        B --> C[Server-side Lisp]
+        B --> D[Client-side JavaScript]
+    end
+    
+    subgraph "Runtime - Server"
+        E[HTTP Server] --> F[Lisp Handler]
+        F --> G[Server-side Rendering]
+        G --> H[HTML + Hydration Data]
+        I[WebSocket Server] --> J[Real-time Updates]
+    end
+    
+    subgraph "Runtime - Client"
+        K[Browser] --> L[JavaScript Runtime]  
+        L --> M[Lisp-to-JS Components]
+        M --> N[DOM Manipulation]
+        O[WebSocket Client] --> P[State Synchronization]
+    end
+    
+    H --> K
+    J -.->|Real-time| O
+    N --> Q[User Interactions]
+    Q --> R[Event Handlers]
+    R --> S[State Updates]
+    S -.->|Sync| I
+    
+    subgraph "Shared Components"
+        T[Component Library] --> U[Business Logic]
+        U --> V[Validation Rules]
+        V --> W[Data Models]
+    end
+    
+    C --> T
+    D --> T
+#+END_SRC
+
+** Core Component System
+
+*** Component Definition and Compilation
+#+BEGIN_SRC lisp :tangle code/lisp-web-components/components.lisp :mkdirp t
+(defpackage :lisp-web-components.core
+  (:use :cl)
+  (:export :defcomponent
+           :render-component
+           :component-state
+           :handle-event))
+
+(in-package :lisp-web-components.core)
+
+(defmacro defcomponent (name (&key props state) &body body)
+  "Define a web component that works on both client and server"
+  `(progn
+     (defclass ,name ()
+       ((props :initarg :props :accessor component-props)
+        (state :initarg :state :initform (make-hash-table) :accessor component-state)
+        (event-handlers :initform (make-hash-table :test 'equal) 
+                        :accessor component-event-handlers)))
+     
+     (defmethod render-component ((component ,name))
+       (with-component-context component
+         ,@body))
+     
+     (defmethod initialize-instance :after ((component ,name) &key)
+       (initialize-component-state component ',state))
+     
+     ;; Generate client-side JavaScript equivalent
+     ,(generate-js-component name props state body)))
+
+(defun generate-js-component (name props state body)
+  "Generate JavaScript equivalent of Lisp component"
+  (let ((js-code (compile-lisp-to-js body)))
+    `(progn
+       (export-js-component ',name ',js-code)
+       (register-component-mapping ',name ,(string-downcase (symbol-name name))))))
+
+;; Example component definition
+(defcomponent todo-item (:props (text completed) :state (editing))
+  (html
+    (:div :class (if (gethash 'editing (component-state *current-component*))
+                     "todo-item editing"
+                     "todo-item")
+          (:input :type "checkbox" 
+                  :checked completed
+                  :on-change (handle-toggle))
+          (:span :class "todo-text"
+                 :on-double-click (handle-edit-start)
+                 text)
+          (:button :class "delete-btn"
+                   :on-click (handle-delete)
+                   "×"))))
+
+(defcomponent todo-list (:props (items) :state (filter new-item))
+  (html
+    (:div :class "todo-app"
+          (:header
+            (:h1 "Todo List")
+            (:input :type "text"
+                    :placeholder "What needs to be done?"
+                    :value (gethash 'new-item (component-state *current-component*))
+                    :on-change (handle-input-change)
+                    :on-keypress (handle-add-item)))
+          
+          (:main
+            (:ul :class "todo-list"
+                 (mapcar (lambda (item)
+                           (render-component 
+                             (make-instance 'todo-item
+                                            :props (list :text (getf item :text)
+                                                         :completed (getf item :completed)))))
+                         (filter-items items (gethash 'filter (component-state *current-component*))))))
+          
+          (:footer
+            (:span :class "todo-count"
+                   (format nil "~A items left" (count-active-items items)))
+            (:div :class "filters"
+                  (:button :class (if (eq (gethash 'filter (component-state *current-component*)) :all)
+                                      "selected" "")
+                           :on-click (lambda () (set-filter :all))
+                           "All")
+                  (:button :class (if (eq (gethash 'filter (component-state *current-component*)) :active)
+                                      "selected" "")
+                           :on-click (lambda () (set-filter :active))
+                           "Active")
+                  (:button :class (if (eq (gethash 'filter (component-state *current-component*)) :completed)
+                                      "selected" "")
+                           :on-click (lambda () (set-filter :completed))
+                           "Completed"))))))
+#+END_SRC
+
+*** Lisp-to-JavaScript Compiler
+#+BEGIN_SRC lisp :tangle code/lisp-web-components/compiler.lisp :mkdirp t
+(defpackage :lisp-web-components.compiler
+  (:use :cl)
+  (:export :compile-lisp-to-js
+           :generate-component-js
+           :compile-event-handler))
+
+(in-package :lisp-web-components.compiler)
+
+(defvar *js-translation-table*
+  '((defun . function)
+    (lambda . function)
+    (if . "if")
+    (cond . "switch")
+    (let . "const")
+    (setf . "=")
+    (eq . "===")
+    (equal . "===")
+    (+ . "+")
+    (- . "-")
+    (* . "*")
+    (/ . "/")
+    (format . "console.log")
+    (list . "[]")
+    (mapcar . "map")
+    (filter . "filter")
+    (reduce . "reduce")))
+
+(defun compile-lisp-to-js (lisp-code)
+  "Compile Lisp code to equivalent JavaScript"
+  (cond
+    ((atom lisp-code) (compile-atom-to-js lisp-code))
+    ((listp lisp-code) (compile-list-to-js lisp-code))
+    (t (error "Unknown Lisp form: ~A" lisp-code))))
+
+(defun compile-atom-to-js (atom)
+  "Compile Lisp atom to JavaScript equivalent"
+  (cond
+    ((numberp atom) (format nil "~A" atom))
+    ((stringp atom) (format nil "\"~A\"" atom))
+    ((symbolp atom) 
+     (let ((js-equivalent (cdr (assoc atom *js-translation-table*))))
+       (if js-equivalent
+           js-equivalent
+           (string-downcase (symbol-name atom)))))
+    (t (format nil "~A" atom))))
+
+(defun compile-list-to-js (list-code)
+  "Compile Lisp list to JavaScript equivalent"
+  (let ((operator (first list-code))
+        (args (rest list-code)))
+    
+    (case operator
+      ;; Function definition
+      (defun
+        (let ((name (first args))
+              (params (second args))
+              (body (cddr args)))
+          (format nil "function ~A(~{~A~^, ~}) {~%~{  ~A;~%~}}"
+                  (string-downcase (symbol-name name))
+                  (mapcar #'string-downcase (mapcar #'symbol-name params))
+                  (mapcar #'compile-lisp-to-js body))))
+      
+      ;; Conditional
+      (if
+        (format nil "(~A) ? (~A) : (~A)"
+                (compile-lisp-to-js (first args))
+                (compile-lisp-to-js (second args))
+                (compile-lisp-to-js (third args))))
+      
+      ;; HTML elements
+      (html (compile-html-to-js args))
+      
+      ;; Event handlers
+      (handle-event (compile-event-handler-to-js args))
+      
+      ;; Function calls
+      (t (format nil "~A(~{~A~^, ~})"
+                 (compile-lisp-to-js operator)
+                 (mapcar #'compile-lisp-to-js args))))))
+
+(defun compile-html-to-js (html-forms)
+  "Compile HTML S-expressions to JavaScript DOM creation"
+  (mapcar (lambda (form)
+            (if (listp form)
+                (let ((tag (first form))
+                      (attrs-and-content (rest form)))
+                  (format nil "createElement('~A', ~A, [~{~A~^, ~}])"
+                          (string-downcase (symbol-name tag))
+                          (compile-attributes-to-js (extract-attributes attrs-and-content))
+                          (mapcar #'compile-lisp-to-js (extract-content attrs-and-content))))
+                (compile-lisp-to-js form)))
+          html-forms))
+
+(defun generate-component-js (component-name lisp-code)
+  "Generate complete JavaScript component from Lisp definition"
+  (format nil "
+class ~A extends LispComponent {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+  
+  render() {
+    ~A
+  }
+  
+  ~{~A~%~}
+}"
+          (capitalize-string (symbol-name component-name))
+          (compile-lisp-to-js lisp-code)
+          (generate-event-handlers component-name)))
+#+END_SRC
+
+*** State Management and Synchronization
+#+BEGIN_SRC lisp :tangle code/lisp-web-components/state-sync.lisp :mkdirp t
+(defpackage :lisp-web-components.state
+  (:use :cl)
+  (:export :define-shared-state
+           :update-state
+           :sync-state
+           :subscribe-to-changes))
+
+(in-package :lisp-web-components.state)
+
+(defclass shared-state ()
+  ((data :initform (make-hash-table :test 'equal) :accessor state-data)
+   (subscribers :initform '() :accessor state-subscribers)
+   (sync-connection :initform nil :accessor sync-connection)
+   (version :initform 0 :accessor state-version)))
+
+(defvar *global-state* (make-instance 'shared-state))
+
+(defmacro define-shared-state (name initial-value &key (sync t))
+  "Define a piece of shared state that syncs between client and server"
+  `(progn
+     (setf (gethash ',name (state-data *global-state*)) ,initial-value)
+     
+     ;; Set up synchronization if requested
+     ,(when sync
+        `(setup-state-sync ',name))
+     
+     ;; Generate accessor functions
+     (defun ,(intern (format nil "GET-~A" name)) ()
+       (gethash ',name (state-data *global-state*)))
+     
+     (defun ,(intern (format nil "SET-~A" name)) (value)
+       (update-state ',name value))
+     
+     ',name))
+
+(defun update-state (key new-value &key (broadcast t))
+  "Update shared state and optionally broadcast changes"
+  (let ((old-value (gethash key (state-data *global-state*))))
+    (unless (equal old-value new-value)
+      (setf (gethash key (state-data *global-state*)) new-value)
+      (incf (state-version *global-state*))
+      
+      ;; Notify local subscribers
+      (notify-subscribers key old-value new-value)
+      
+      ;; Broadcast to remote clients if enabled
+      (when broadcast
+        (broadcast-state-change key new-value)))))
+
+(defun subscribe-to-changes (key callback)
+  "Subscribe to changes in a specific state key"
+  (push (list key callback) (state-subscribers *global-state*)))
+
+(defun notify-subscribers (key old-value new-value)
+  "Notify all subscribers of a state change"
+  (dolist (subscriber (state-subscribers *global-state*))
+    (when (eq (first subscriber) key)
+      (funcall (second subscriber) old-value new-value))))
+
+(defun setup-state-sync (key)
+  "Set up real-time synchronization for a state key"
+  #+client-side
+  (setup-websocket-sync key)
+  
+  #+server-side
+  (setup-server-sync key))
+
+#+client-side
+(defun setup-websocket-sync (key)
+  "Set up WebSocket-based state synchronization (client-side)"
+  (let ((ws (make-websocket-connection)))
+    (setf (sync-connection *global-state*) ws)
+    
+    ;; Send state updates to server
+    (subscribe-to-changes key
+                          (lambda (old new)
+                            (declare (ignore old))
+                            (send-websocket-message ws
+                                                    (list :state-update key new))))
+    
+    ;; Receive state updates from server
+    (set-websocket-handler ws
+                           (lambda (message)
+                             (when (eq (first message) :state-update)
+                               (let ((updated-key (second message))
+                                     (new-value (third message)))
+                                 (when (eq updated-key key)
+                                   (update-state key new-value :broadcast nil))))))))
+
+#+server-side
+(defun setup-server-sync (key)
+  "Set up server-side state synchronization"
+  (subscribe-to-changes key
+                        (lambda (old new)
+                          (declare (ignore old))
+                          (broadcast-to-all-clients
+                            (list :state-update key new)))))
+
+;; Example usage
+(define-shared-state todo-items 
+  '((:id 1 :text "Learn Lisp" :completed nil)
+    (:id 2 :text "Build web app" :completed nil))
+  :sync t)
+
+(define-shared-state current-filter :all :sync t)
+#+END_SRC
+
+** Live Demonstration
+
+*** Full-Stack Todo Application
+#+BEGIN_SRC lisp :tangle code/lisp-web-components/demo-app.lisp :mkdirp t
+(defpackage :lisp-web-components.demo
+  (:use :cl :lisp-web-components.core :lisp-web-components.state))
+
+(in-package :lisp-web-components.demo)
+
+;; Shared business logic (works on both client and server)
+(defun add-todo-item (text)
+  "Add a new todo item to the shared state"
+  (let* ((current-items (get-todo-items))
+         (new-id (1+ (apply #'max 0 (mapcar (lambda (item) (getf item :id)) 
+                                             current-items))))
+         (new-item (list :id new-id :text text :completed nil)))
+    (set-todo-items (cons new-item current-items))))
+
+(defun toggle-todo-item (id)
+  "Toggle completion status of a todo item"
+  (let ((updated-items
+          (mapcar (lambda (item)
+                    (if (= (getf item :id) id)
+                        (list :id id
+                              :text (getf item :text)
+                              :completed (not (getf item :completed)))
+                        item))
+                  (get-todo-items))))
+    (set-todo-items updated-items)))
+
+(defun delete-todo-item (id)
+  "Delete a todo item"
+  (set-todo-items (remove-if (lambda (item) (= (getf item :id) id))
+                             (get-todo-items))))
+
+(defun filter-todo-items (items filter)
+  "Filter todo items based on current filter"
+  (case filter
+    (:active (remove-if (lambda (item) (getf item :completed)) items))
+    (:completed (remove-if-not (lambda (item) (getf item :completed)) items))
+    (t items)))
+
+;; Component event handlers (compiled to both Lisp and JavaScript)
+(defun handle-add-todo (event)
+  "Handle adding a new todo item"
+  (let ((input-value (get-input-value event)))
+    (when (and input-value (> (length (string-trim " " input-value)) 0))
+      (add-todo-item (string-trim " " input-value))
+      (clear-input event))))
+
+(defun handle-toggle-todo (id)
+  "Handle toggling a todo item"
+  (lambda (event)
+    (declare (ignore event))
+    (toggle-todo-item id)))
+
+(defun handle-delete-todo (id)
+  "Handle deleting a todo item"
+  (lambda (event)
+    (declare (ignore event))
+    (delete-todo-item id)))
+
+(defun handle-filter-change (filter)
+  "Handle changing the todo filter"
+  (lambda (event)
+    (declare (ignore event))
+    (set-current-filter filter)))
+
+;; Main application component
+(defcomponent todo-app (:props () :state ())
+  (let ((items (get-todo-items))
+        (filter (get-current-filter)))
+    (html
+      (:div :class "todo-app"
+            (:header :class "header"
+                     (:h1 "todos")
+                     (:input :class "new-todo"
+                             :placeholder "What needs to be done?"
+                             :on-keypress (lambda (e)
+                                            (when (= (get-key-code e) 13)
+                                              (handle-add-todo e)))))
+            
+            (:main :class "main"
+                   (:ul :class "todo-list"
+                        (mapcar (lambda (item)
+                                  (render-todo-item item))
+                                (filter-todo-items items filter))))
+            
+            (:footer :class "footer"
+                     (:span :class "todo-count"
+                            (format nil "~A item~:P left"
+                                    (length (filter-todo-items items :active))))
+                     
+                     (:ul :class "filters"
+                          (:li (:a :class (if (eq filter :all) "selected" "")
+                                   :href "#/"
+                                   :on-click (handle-filter-change :all)
+                                   "All"))
+                          (:li (:a :class (if (eq filter :active) "selected" "")
+                                   :href "#/active"
+                                   :on-click (handle-filter-change :active)
+                                   "Active"))
+                          (:li (:a :class (if (eq filter :completed) "selected" "")
+                                   :href "#/completed"
+                                   :on-click (handle-filter-change :completed)
+                                   "Completed"))))))))
+
+(defun render-todo-item (item)
+  "Render a single todo item"
+  (let ((id (getf item :id))
+        (text (getf item :text))
+        (completed (getf item :completed)))
+    (html
+      (:li :class (if completed "completed" "")
+           (:div :class "view"
+                 (:input :class "toggle"
+                         :type "checkbox"
+                         :checked completed
+                         :on-change (handle-toggle-todo id))
+                 (:label text)
+                 (:button :class "destroy"
+                          :on-click (handle-delete-todo id)))))))
+
+;; Demo function
+(defun demo-isomorphic-app ()
+  "Demonstrate the isomorphic todo application"
+  (format t "=== Isomorphic Lisp Web Components Demo ===~%~%")
+  
+  ;; Server-side rendering
+  (format t "1. Server-side rendering:~%")
+  (let ((app (make-instance 'todo-app)))
+    (format t "~A~%" (render-component app)))
+  
+  ;; State synchronization demo
+  (format t "~%2. State synchronization:~%")
+  (add-todo-item "Demo task 1")
+  (add-todo-item "Demo task 2")
+  (format t "Added 2 items, current state: ~A~%" (get-todo-items))
+  
+  (toggle-todo-item 1)
+  (format t "Toggled item 1, current state: ~A~%" (get-todo-items))
+  
+  ;; Client-side compilation
+  (format t "~%3. Generated JavaScript:~%")
+  (format t "~A~%" (generate-component-js 'todo-app 
+                                          '(render-component (make-instance 'todo-app)))))
+#+END_SRC
+
+** Key Advantages
+1. **Code Reuse**: Same business logic on client and server
+2. **Type Safety**: Lisp's type system across the full stack
+3. **Real-time Sync**: Automatic state synchronization
+4. **SEO Friendly**: Server-side rendering with client-side hydration
+
+* Talk 5: Practical Protocol-Oriented Programming in Common Lisp
+:PROPERTIES:
+:EXPORT_FILE_NAME: 05-protocol-programming.md
+:END:
+
+** Abstract
+Protocol-Oriented Programming (POP) has gained prominence in languages like Swift and Rust, but Common Lisp's flexibility makes it an ideal platform for protocol-based design. This talk demonstrates how to implement practical protocol systems in Lisp, combining the best aspects of generic functions, CLOS, and modern protocol design patterns to create maintainable and extensible systems.
+
+** Protocol System Architecture
+
+#+BEGIN_SRC mermaid :file images/protocol-system-architecture.png :exports both
+graph TD
+    subgraph "Protocol Definition Layer"
+        A[Protocol Declaration] --> B[Required Methods]
+        B --> C[Default Implementations]
+        C --> D[Protocol Constraints]
+    end
+    
+    subgraph "Implementation Layer"
+        E[Type Definitions] --> F[Protocol Conformance]
+        F --> G[Method Implementations]
+        G --> H[Extension Methods]
+    end
+    
+    subgraph "Composition Layer"
+        I[Protocol Composition] --> J[Multiple Conformance]
+        J --> K[Protocol Inheritance]
+        K --> L[Conditional Conformance]
+    end
+    
+    subgraph "Runtime System"
+        M[Protocol Registry] --> N[Conformance Checking]
+        N --> O[Dynamic Dispatch]
+        O --> P[Performance Optimization]
+    end
+    
+    A --> E
+    C --> H
+    F --> M
+    L --> N
+#+END_SRC
+
+** Core Protocol System Implementation
+
+*** Protocol Definition Framework
+#+BEGIN_SRC lisp :tangle code/protocol-programming/protocols.lisp :mkdirp t
+(defpackage :protocol-programming.core
+  (:use :cl)
+  (:export :defprotocol
+           :conform-to
+           :protocol-method
+           :default-implementation
+           :conformsp))
+
+(in-package :protocol-programming.core)
+
+(defvar *protocol-registry* (make-hash-table))
+(defvar *conformance-registry* (make-hash-table))
+(defvar *default-implementations* (make-hash-table))
+
+(defstruct protocol
+  name
+  methods
+  documentation
+  constraints
+  default-implementations)
+
+(defstruct protocol-method
+  name
+  lambda-list
+  documentation
+  constraints
+  default-body)
+
+(defmacro defprotocol (name &key documentation methods constraints)
+  "Define a protocol with required methods and optional constraints"
+  `(progn
+     (setf (gethash ',name *protocol-registry*)
+           (make-protocol
+            :name ',name
+            :documentation ,documentation
+            :methods (list ,@(mapcar #'compile-protocol-method methods))
+            :constraints ',constraints))
+     
+     ;; Create generic functions for each protocol method
+     ,@(mapcar (lambda (method-spec)
+                 (let ((method-name (first method-spec))
+                       (lambda-list (second method-spec))
+                       (documentation (getf (cddr method-spec) :documentation)))
+                   `(defgeneric ,method-name ,lambda-list
+                      ,@(when documentation `((:documentation ,documentation))))))
+               methods)
+     
+     ;; Define protocol checking function
+     (defun ,(intern (format nil "~A-P" name)) (object)
+       (conformsp object ',name))
+     
+     ',name))
+
+(defun compile-protocol-method (method-spec)
+  "Compile a protocol method specification"
+  (let ((name (first method-spec))
+        (lambda-list (second method-spec))
+        (options (cddr method-spec)))
+    
+    (make-protocol-method
+     :name name
+     :lambda-list lambda-list
+     :documentation (getf options :documentation)
+     :constraints (getf options :constraints)
+     :default-body (getf options :default))))
+
+(defmacro conform-to (type protocol-name &body method-implementations)
+  "Declare that a type conforms to a protocol"
+  `(progn
+     ;; Register conformance
+     (let ((conformances (gethash ',type *conformance-registry*)))
+       (pushnew ',protocol-name conformances)
+       (setf (gethash ',type *conformance-registry*) conformances))
+     
+     ;; Implement required methods
+     ,@(mapcar (lambda (impl)
+                 (let ((method-name (first impl))
+                       (method-lambda-list (second impl))
+                       (method-body (cddr impl)))
+                   `(defmethod ,method-name ,method-lambda-list
+                      ,@method-body)))
+               method-implementations)
+     
+     ;; Validate conformance
+     (validate-protocol-conformance ',type ',protocol-name)
+     
+     t))
+
+(defun conformsp (object protocol-name)
+  "Check if an object conforms to a protocol"
+  (let ((type (type-of object)))
+    (member protocol-name (gethash type *conformance-registry*))))
+
+(defun validate-protocol-conformance (type protocol-name)
+  "Validate that a type properly implements all required protocol methods"
+  (let ((protocol (gethash protocol-name *protocol-registry*)))
+    (unless protocol
+      (error "Unknown protocol: ~A" protocol-name))
+    
+    (dolist (method (protocol-methods protocol))
+      (let ((method-name (protocol-method-name method)))
+        (unless (find-method (symbol-function method-name) nil (list type) nil)
+          (unless (protocol-method-default-body method)
+            (error "Type ~A must implement method ~A for protocol ~A"
+                   type method-name protocol-name)))))))
+
+;; Example protocol definitions
+(defprotocol drawable
+  :documentation "Objects that can be drawn to a canvas"
+  :methods ((draw (object canvas) :documentation "Draw object to canvas")
+            (bounds (object) :documentation "Get bounding rectangle"))
+  :constraints ((lambda (obj) (slot-exists-p obj 'position))))
+
+(defprotocol serializable
+  :documentation "Objects that can be serialized and deserialized"
+  :methods ((serialize (object) :documentation "Convert object to serializable form")
+            (deserialize (data type) :documentation "Recreate object from data"))
+  :constraints ())
+
+(defprotocol comparable
+  :documentation "Objects that support comparison operations"
+  :methods ((compare (a b) :documentation "Compare two objects (-1, 0, 1)")
+            (equal-p (a b) :documentation "Test equality"
+                     :default (zerop (compare a b))))
+  :constraints ())
+#+END_SRC
+
+*** Protocol Composition and Extension
+#+BEGIN_SRC lisp :tangle code/protocol-programming/composition.lisp :mkdirp t
+(defpackage :protocol-programming.composition
+  (:use :cl :protocol-programming.core)
+  (:export :defprotocol-extension
+           :protocol-inherits
+           :conditional-conformance
+           :protocol-composition))
+
+(in-package :protocol-programming.composition)
+
+(defmacro defprotocol-extension (protocol-name &key additional-methods constraints)
+  "Extend an existing protocol with additional methods"
+  (let ((base-protocol (gethash protocol-name *protocol-registry*)))
+    (unless base-protocol
+      (error "Cannot extend unknown protocol: ~A" protocol-name))
+    
+    `(progn
+       ;; Add new methods to existing protocol
+       ,@(mapcar (lambda (method-spec)
+                   (let ((method-name (first method-spec))
+                         (lambda-list (second method-spec)))
+                     `(defgeneric ,method-name ,lambda-list)))
+                 additional-methods)
+       
+       ;; Update protocol registry
+       (let ((updated-protocol (copy-protocol ,base-protocol)))
+         (setf (protocol-methods updated-protocol)
+               (append (protocol-methods updated-protocol)
+                       (list ,@(mapcar #'compile-protocol-method additional-methods))))
+         (setf (protocol-constraints updated-protocol)
+               (append (protocol-constraints updated-protocol) ',constraints))
+         (setf (gethash ',protocol-name *protocol-registry*) updated-protocol))
+       
+       ',protocol-name)))
+
+(defmacro protocol-inherits (child-protocol parent-protocols &key additional-methods)
+  "Define a protocol that inherits from one or more parent protocols"
+  `(progn
+     ;; Collect all methods from parent protocols
+     (let ((inherited-methods '())
+           (inherited-constraints '()))
+       
+       (dolist (parent ',parent-protocols)
+         (let ((parent-protocol (gethash parent *protocol-registry*)))
+           (when parent-protocol
+             (setf inherited-methods 
+                   (append inherited-methods (protocol-methods parent-protocol)))
+             (setf inherited-constraints
+                   (append inherited-constraints (protocol-constraints parent-protocol))))))
+       
+       ;; Define the child protocol
+       (setf (gethash ',child-protocol *protocol-registry*)
+             (make-protocol
+              :name ',child-protocol
+              :methods (append inherited-methods
+                               (list ,@(mapcar #'compile-protocol-method additional-methods)))
+              :constraints inherited-constraints)))
+     
+     ;; Create generic functions for additional methods
+     ,@(mapcar (lambda (method-spec)
+                 (let ((method-name (first method-spec))
+                       (lambda-list (second method-spec)))
+                   `(defgeneric ,method-name ,lambda-list)))
+               additional-methods)
+     
+     ',child-protocol))
+
+(defmacro conditional-conformance (type protocol-name condition &body implementations)
+  "Declare conditional conformance to a protocol"
+  `(when ,condition
+     (conform-to ,type ,protocol-name ,@implementations)))
+
+(defmacro protocol-composition (name &key protocols additional-methods)
+  "Create a new protocol that combines multiple existing protocols"
+  `(protocol-inherits ,name ,protocols :additional-methods ,additional-methods))
+
+;; Example protocol inheritance
+(protocol-inherits shape-3d (drawable serializable)
+  :additional-methods ((volume (object) :documentation "Calculate 3D volume")
+                       (surface-area (object) :documentation "Calculate surface area")))
+
+(defprotocol animated
+  :documentation "Objects that can be animated"
+  :methods ((animate (object delta-time) :documentation "Update animation state")
+            (animation-complete-p (object) :documentation "Check if animation is done")))
+
+(protocol-composition animated-shape
+  :protocols (drawable animated)
+  :additional-methods ((animate-draw (object canvas delta-time)
+                                     :documentation "Animate and draw in one step")))
+#+END_SRC
+
+*** Practical Protocol Examples
+#+BEGIN_SRC lisp :tangle code/protocol-programming/examples.lisp :mkdirp t
+(defpackage :protocol-programming.examples
+  (:use :cl :protocol-programming.core :protocol-programming.composition)
+  (:export :rectangle :circle :point
+           :json-serializer :xml-serializer
+           :demo-protocol-system))
+
+(in-package :protocol-programming.examples)
+
+;; Define concrete types
+(defclass rectangle ()
+  ((width :initarg :width :accessor rect-width)
+   (height :initarg :height :accessor rect-height)
+   (position :initarg :position :accessor rect-position)))
+
+(defclass circle ()
+  ((radius :initarg :radius :accessor circle-radius)
+   (position :initarg :position :accessor circle-position)))
+
+(defclass point ()
+  ((x :initarg :x :accessor point-x)
+   (y :initarg :y :accessor point-y)))
+
+;; Implement drawable protocol for shapes
+(conform-to rectangle drawable
+  (draw (rect canvas)
+    (format canvas "Drawing rectangle ~Ax~A at ~A~%"
+            (rect-width rect) (rect-height rect) (rect-position rect)))
+  
+  (bounds (rect)
+    (list :x (point-x (rect-position rect))
+          :y (point-y (rect-position rect))
+          :width (rect-width rect)
+          :height (rect-height rect))))
+
+(conform-to circle drawable
+  (draw (circle canvas)
+    (format canvas "Drawing circle radius ~A at ~A~%"
+            (circle-radius circle) (circle-position circle)))
+  
+  (bounds (circle)
+    (let ((r (circle-radius circle))
+          (pos (circle-position circle)))
+      (list :x (- (point-x pos) r)
+            :y (- (point-y pos) r)
+            :width (* 2 r)
+            :height (* 2 r)))))
+
+;; Implement serializable protocol
+(conform-to rectangle serializable
+  (serialize (rect)
+    (list :type 'rectangle
+          :width (rect-width rect)
+          :height (rect-height rect)
+          :position (serialize (rect-position rect))))
+  
+  (deserialize (data type)
+    (declare (ignore type))
+    (make-instance 'rectangle
+                   :width (getf data :width)
+                   :height (getf data :height)
+                   :position (deserialize (getf data :position) 'point))))
+
+(conform-to point serializable
+  (serialize (pt)
+    (list :type 'point :x (point-x pt) :y (point-y pt)))
+  
+  (deserialize (data type)
+    (declare (ignore type))
+    (make-instance 'point :x (getf data :x) :y (getf data :y))))
+
+;; Implement comparable protocol for points
+(conform-to point comparable
+  (compare (a b)
+    (let ((dist-a (sqrt (+ (* (point-x a) (point-x a))
+                           (* (point-y a) (point-y a)))))
+          (dist-b (sqrt (+ (* (point-x b) (point-x b))
+                           (* (point-y b) (point-y b))))))
+      (cond ((< dist-a dist-b) -1)
+            ((> dist-a dist-b) 1)
+            (t 0)))))
+
+;; Protocol-based serialization strategies
+(defclass json-serializer ()
+  ((indent-level :initarg :indent :initform 0 :accessor json-indent)))
+
+(defclass xml-serializer ()
+  ((namespace :initarg :namespace :initform nil :accessor xml-namespace)))
+
+(defgeneric serialize-with (serializer object)
+  (:documentation "Serialize object using specific serializer"))
+
+(defmethod serialize-with ((serializer json-serializer) object)
+  (if (conformsp object 'serializable)
+      (format nil "{~{\"~A\": ~A~^, ~}}"
+              (flatten-plist (serialize object)))
+      (error "Object ~A does not conform to serializable protocol" object)))
+
+(defmethod serialize-with ((serializer xml-serializer) object)
+  (if (conformsp object 'serializable)
+      (let ((data (serialize object)))
+        (format nil "<~A>~{<~A>~A</~A>~}</~A>"
+                (getf data :type)
+                (flatten-xml-data (remove :type data))
+                (getf data :type)))
+      (error "Object ~A does not conform to serializable protocol" object)))
+
+;; Advanced protocol composition example
+(defprotocol persistent
+  :documentation "Objects that can be persisted to storage"
+  :methods ((save (object store) :documentation "Save object to store")
+            (load (id store type) :documentation "Load object from store")
+            (delete (object store) :documentation "Delete object from store")))
+
+(defclass database-store ()
+  ((connection :initarg :connection :accessor db-connection)))
+
+(defclass file-store ()
+  ((directory :initarg :directory :accessor file-directory)))
+
+;; Multiple protocol conformance
+(conform-to rectangle persistent
+  (save (rect store)
+    (let ((serialized (serialize rect)))
+      (store-data store (getf serialized :type) serialized)))
+  
+  (load (id store type)
+    (let ((data (retrieve-data store id)))
+      (deserialize data type)))
+  
+  (delete (rect store)
+    (remove-data store (object-id rect))))
+
+;; Demonstration function
+(defun demo-protocol-system ()
+  "Comprehensive demonstration of the protocol system"
+  (format t "=== Protocol-Oriented Programming Demo ===~%~%")
+  
+  ;; Create test objects
+  (let ((rect (make-instance 'rectangle
+                             :width 10 :height 5
+                             :position (make-instance 'point :x 2 :y 3)))
+        (circle (make-instance 'circle
+                               :radius 7
+                               :position (make-instance 'point :x 0 :y 0)))
+        (pt1 (make-instance 'point :x 3 :y 4))
+        (pt2 (make-instance 'point :x 1 :y 1)))
+    
+    ;; Test drawable protocol
+    (format t "1. Drawing objects:~%")
+    (draw rect t)
+    (draw circle t)
+    (format t "Rectangle bounds: ~A~%" (bounds rect))
+    
+    ;; Test serializable protocol
+    (format t "~%2. Serialization:~%")
+    (let ((rect-data (serialize rect)))
+      (format t "Serialized rectangle: ~A~%" rect-data)
+      (let ((restored-rect (deserialize rect-data 'rectangle)))
+        (format t "Restored rectangle width: ~A~%" (rect-width restored-rect))))
+    
+    ;; Test comparable protocol
+    (format t "~%3. Comparison:~%")
+    (format t "Comparing points: ~A~%" (compare pt1 pt2))
+    (format t "Points equal? ~A~%" (equal-p pt1 pt1))
+    
+    ;; Test protocol composition
+    (format t "~%4. Protocol conformance checking:~%")
+    (format t "Rectangle conforms to drawable? ~A~%" (drawable-p rect))
+    (format t "Rectangle conforms to serializable? ~A~%" (serializable-p rect))
+    (format t "Circle conforms to comparable? ~A~%" (comparable-p circle))
+    
+    ;; Test serialization strategies
+    (format t "~%5. Serialization strategies:~%")
+    (let ((json-ser (make-instance 'json-serializer))
+          (xml-ser (make-instance 'xml-serializer)))
+      (format t "JSON: ~A~%" (serialize-with json-ser pt1))
+      (format t "XML: ~A~%" (serialize-with xml-ser pt1)))))
+
+;; Utility functions
+(defun flatten-plist (plist)
+  "Convert plist to alternating key-value list for JSON formatting"
+  (loop for (key value) on plist by #'cddr
+        collect (string-downcase (symbol-name key))
+        collect (if (stringp value) 
+                    (format nil "\"~A\"" value)
+                    (format nil "~A" value))))
+
+(defun flatten-xml-data (plist)
+  "Convert plist to XML element list"
+  (loop for (key value) on plist by #'cddr
+        collect (string-downcase (symbol-name key))
+        collect value
+        collect (string-downcase (symbol-name key))))
+#+END_SRC
+
+** Key Benefits and Design Patterns
+
+*** Protocol-Based Dependency Injection
+#+BEGIN_SRC lisp :tangle code/protocol-programming/dependency-injection.lisp :mkdirp t
+(defpackage :protocol-programming.di
+  (:use :cl :protocol-programming.core)
+  (:export :injectable
+           :inject
+           :configure-container))
+
+(in-package :protocol-programming.di)
+
+(defprotocol injectable
+  :documentation "Objects that can be injected as dependencies"
+  :methods ((get-dependencies (object) :documentation "List required dependencies")
+            (inject-dependencies (object deps) :documentation "Inject dependencies")))
+
+(defvar *dependency-container* (make-hash-table))
+
+(defun configure-container (bindings)
+  "Configure the dependency injection container"
+  (dolist (binding bindings)
+    (setf (gethash (first binding) *dependency-container*) (second binding))))
+
+(defun inject (type)
+  "Resolve and inject dependencies for a type"
+  (let ((implementation (gethash type *dependency-container*)))
+    (if implementation
+        (if (conformsp implementation 'injectable)
+            (let ((deps (resolve-dependencies (get-dependencies implementation))))
+              (inject-dependencies implementation deps)
+              implementation)
+            implementation)
+        (error "No binding found for type ~A" type))))
+
+(defun resolve-dependencies (dep-list)
+  "Recursively resolve all dependencies"
+  (mapcar #'inject dep-list))
+#+END_SRC
+
+** Key Innovation Points
+1. **Flexible Composition**: Mix and match protocols without complex inheritance
+2. **Runtime Conformance**: Dynamic protocol checking and conditional conformance
+3. **Extension-Friendly**: Add new methods to existing protocols
+4. **Performance Aware**: Optimized dispatch using CLOS generic functions
+
+* Conclusion
+
+These five lightning talks represent different aspects of modern Lisp development, from AI integration to web development to type systems. Each proposal demonstrates how Lisp's unique features - symbolic computation, macro system, and runtime flexibility - enable innovative approaches to common programming challenges.
+
+The talks are designed to be:
+- **Practical**: Solving real-world development problems
+- **Demonstrable**: Each includes working code and live demos
+- **Forward-Looking**: Exploring emerging trends in programming language design
+- **Lisp-Centric**: Leveraging Lisp's unique strengths rather than copying other languages
+
+#+BEGIN_SRC mermaid :file images/talk-relationships.png :exports both
+graph TB
+    A[Bidirectional LLM] --> B[AI-Enhanced Development]
+    C[REPL Observability] --> D[Development Tools]
+    E[Incremental Types] --> F[Language Extensions]
+    G[Web Components] --> H[Modern Applications]
+    I[Protocol Programming] --> J[Design Patterns]
+    
+    B --> K[Future of Lisp]
+    D --> K
+    F --> K
+    H --> K
+    J --> K
+    
+    K --> L[ELS 2026 Vision]
+#+END_SRC
+
+Each talk contributes to a vision of Lisp as a modern, relevant language for contemporary software development challenges.

@@ -107,6 +107,24 @@ Based on the ELS 2025 program, lightning talks are 5-minute presentations that c
 
 The talks align with ELS themes of language design, practical applications, AI integration, and novel programming paradigms.
 
+* Development Commands
+
+The project uses Make for build automation. Available commands:
+
+| Command | Description |
+|---------|-------------|
+| =make help= | Show available targets |
+| =make setup= | Initialize repository structure |
+| =make clean= | Remove generated files (*.fasl, *.pdf, *.html, build/, dist/) |
+| =make build= | Build all code examples (Lisp, Racket, Clojure) |
+| =make lisp-build= | Build Common Lisp components only |
+| =make racket-build= | Build Racket components only |
+| =make clojure-build= | Build Clojure components only |
+| =make test= | Run tests for all presentations |
+| =make docs= | Generate HTML documentation from org files |
+| =make presentations= | Build presentation slides (PDF from org files) |
+| =make status= | Show development progress and statistics |
+
 * Development Notes
 
 This repository contains two complementary sets of lightning talk ideas:
