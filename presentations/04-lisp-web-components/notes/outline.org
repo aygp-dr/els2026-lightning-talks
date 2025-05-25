@@ -1,0 +1,82 @@
+#+TITLE: Lisp Web Components - Isomorphic Lisp for Frontend and Backend
+#+AUTHOR: aygp-dr
+#+DATE: 2025-05-25
+#+PROPERTY: header-args :mkdirp yes
+
+* Abstract
+A framework enabling Common Lisp code to run seamlessly in both browser and server environments, creating truly isomorphic web applications where components can be rendered server-side or client-side without code duplication.
+
+* Motivation
+Modern web development suffers from the complexity of maintaining separate codebases for client and server. This system demonstrates how Lisp's uniform syntax and powerful macro system enable writing web components once and deploying them anywhere.
+
+* Technical Details
+** Architecture Overview
+The system consists of three main parts:
+- Development Environment: Single source for component definitions, business logic, and data models
+- Compilation Pipeline: Transpiles Lisp to JavaScript for browser execution
+- Deployment: Supports both server-side rendering and client-side interactivity
+
+Data flows through a shared state store that synchronizes between server and client environments.
+
+** Core Framework Implementation
+*** Component Definition System
+- Macro-based component definition (defcomponent)
+- Generates both server-side and client-side versions
+- Supports props and reactive state
+- Provides HTML serialization for server rendering
+- Enables JavaScript generation for browser execution
+
+*** JavaScript Transpiler
+- Converts Lisp forms to equivalent JavaScript
+- Handles control structures (if, let, format)
+- Transpiles DOM expressions to JSX
+- Generates ES6 classes for components
+- Maintains compatibility with server-side rendering
+
+*** State Management
+- Centralized application store
+- Subscriber pattern for reactive updates
+- Action-based state modifications
+- Supports nested state paths
+- Synchronizes between server and client
+
+* Demo Script
+** Setup (1 minute)
+1. Show a todo application component definition
+2. Demonstrate single codebase for both environments
+
+** Server-Side Rendering (1.5 minutes)
+1. Show server generating initial HTML
+2. Display the generated HTML in browser
+3. Demonstrate fast initial page load
+
+** Client-Side Hydration (1.5 minutes)
+1. Show JavaScript compilation of same components
+2. Demonstrate client-side state management
+3. Show seamless transition from server to client rendering
+
+** Unified Development (1 minute)
+1. Make a change to component definition
+2. Show automatic updates in both server and client
+3. Demonstrate shared state synchronization
+
+* Key Takeaways
+- Single codebase for frontend and backend
+- Leverages Lisp's macro system for powerful abstractions
+- Eliminates JavaScript/TypeScript complexity
+- Maintains Lisp's interactive development experience
+- Enables true code reuse between environments
+
+* Technical Considerations
+- JavaScript interop for browser APIs
+- Performance optimization for transpiled code
+- SEO and accessibility compliance
+- Bundle size management
+- Browser compatibility
+
+* Implementation Status
+- [x] Basic component system (50% complete)
+- [ ] JavaScript transpiler (40% complete)
+- [x] State management framework (60% complete)
+- [ ] Browser runtime optimization (30% complete)
+- [ ] Development tooling (20% complete)

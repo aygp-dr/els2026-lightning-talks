@@ -45,39 +45,38 @@ Repository for developing potential lightning talks for the European Lisp Sympos
 - *Type:* Experience report
 - *Directory:* =presentations/05-protocol-programming/=
 
-** Original Research Talks (talk*/)
-*** 1. Lisp Macros Meet WebAssembly
+** Original Research Talks
+*** 6. Lisp Macros Meet WebAssembly
 - *Focus:* Compile-time macro generation of optimized WebAssembly
 - *Type:* Technical demonstration
-- *Directory:* =talk1-lisp-macros-webassembly/=
+- *Directory:* =presentations/06-lisp-macros-webassembly/=
 
-*** 2. Teaching Old REPLs New Tricks
+*** 7. Teaching Old REPLs New Tricks
 - *Focus:* Interactive debugging in distributed Lisp systems
 - *Type:* Experience report
-- *Directory:* =talk2-distributed-repl-debugging/=
+- *Directory:* =presentations/07-distributed-repl-debugging/=
 
-*** 3. S-expressions as Infrastructure
+*** 8. S-expressions as Infrastructure
 - *Focus:* Configuration management with Lisp metaprogramming
 - *Type:* Demonstration
-- *Directory:* =talk3-sexp-infrastructure/=
+- *Directory:* =presentations/08-sexp-infrastructure/=
 
-*** 4. The Functional Approach to Machine Learning
+*** 9. The Functional Approach to Machine Learning
 - *Focus:* Pure functional neural networks in Scheme
 - *Type:* Research preview
-- *Directory:* =talk4-functional-ml-scheme/=
+- *Directory:* =presentations/09-functional-ml-scheme/=
 
-*** 5. Racket in the Wild
+*** 10. Racket in the Wild
 - *Focus:* Real-world DSLs for scientific computing
 - *Type:* Experience report
-- *Directory:* =talk5-racket-scientific-dsls/=
+- *Directory:* =presentations/10-racket-scientific-dsls/=
 
 * Repository Structure
 
 #+BEGIN_EXAMPLE
 els2026-lightning-talks/
 ├── common/            # Shared resources
-├── presentations/     # Individual presentation folders (setup script)
-├── talk*/             # Original research talk outlines
+├── presentations/     # All individual presentation folders
 ├── planning/          # Project planning documents
 ├── scripts/           # Setup and utility scripts
 └── docs/              # Documentation

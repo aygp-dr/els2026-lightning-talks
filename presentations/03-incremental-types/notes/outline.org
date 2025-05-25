@@ -1,0 +1,74 @@
+#+TITLE: Incremental Type Inference for Common Lisp
+#+AUTHOR: aygp-dr
+#+DATE: 2025-05-25
+#+PROPERTY: header-args :mkdirp yes
+
+* Abstract
+A development-time type inference system that builds type knowledge incrementally as code is written and tested, providing optional static analysis benefits while preserving Lisp's dynamic nature.
+
+* Motivation
+Unlike traditional static type systems, this approach:
+- Learns types from REPL interactions and test execution
+- Provides suggestions rather than requirements
+- Integrates with existing Common Lisp development workflow
+- Builds confidence in type information over time
+
+* Technical Details
+** Type Learning Architecture
+The system learns types from multiple sources:
+- Code Editor: Provides source code AST for analysis
+- REPL Session: Captures runtime values and their types
+- Test Suite: Extracts type constraints from test execution
+- Static Analysis: Adds additional type constraints
+- Documentation: Incorporates type annotations from docstrings
+
+All sources feed into a Type Inference Engine that maintains a Type Database, which provides type hints back to the developer.
+
+** Core Implementation
+*** Type Inference Engine
+- Maintains a database of function and variable types
+- Tracks type observations with confidence scores
+- Determines most specific types for values
+- Updates confidence based on consistency of observations
+- Finds common types across multiple observations
+
+*** REPL Integration
+- Enables automatic type tracing during evaluation
+- Captures argument and return types for functions
+- Provides macro for scoped type learning
+- Suggests type declarations based on learned types
+- Integrates seamlessly with existing REPL workflow
+
+* Demo Script
+** Setup (1 minute)
+1. Show a simple function without type annotations
+2. Enable type learning
+
+** Type Learning (2 minutes)
+1. Call function with various inputs (integers, floats, mixed)
+2. Show accumulated type knowledge
+3. Display confidence levels
+
+** Type Suggestions (2 minutes)
+1. Generate suggested type declarations
+2. Show confidence levels and conflict detection
+3. Demonstrate integration with development environment
+
+* Key Takeaways
+- Preserves Lisp's dynamic nature while adding static analysis benefits
+- Learns from actual usage patterns rather than programmer declarations
+- Provides gradual typing adoption path
+- Integrates seamlessly with existing development workflow
+
+* Technical Challenges
+- Handling polymorphic functions with multiple valid type signatures
+- Balancing type specificity with generality
+- Managing type information persistence across sessions
+- Integration with macro-heavy codebases
+
+* Implementation Status
+- [x] Basic type inference engine (70% complete)
+- [x] REPL integration and tracing (60% complete)
+- [ ] Editor integration and real-time feedback (30% complete)
+- [ ] Test suite integration (40% complete)
+- [ ] Performance optimization (20% complete)

@@ -1,0 +1,82 @@
+#+TITLE: Practical Protocol-Oriented Programming in Common Lisp
+#+AUTHOR: aygp-dr
+#+DATE: 2025-05-25
+#+PROPERTY: header-args :mkdirp yes
+
+* Abstract
+A design methodology that uses Common Lisp's generic functions and method combinations to create flexible, composable systems through protocol definitions rather than inheritance hierarchies.
+
+* Motivation
+Instead of asking "what is this thing?" (inheritance), protocol-oriented programming asks "what can this thing do?" This approach leads to more flexible and testable code by focusing on capabilities and behaviors.
+
+* Technical Details
+** Protocol Design Patterns
+Traditional OOP creates complex inheritance hierarchies that are difficult to modify and test. Protocol-oriented design allows types to implement multiple protocols independently, enabling:
+- Mix and match protocols as needed
+- Independent testing of protocol implementations
+- Easy extension with new protocols
+- Clear contracts for expected behavior
+
+** Protocol Definition Framework
+*** Core Components
+- defprotocol macro: Defines a protocol as a set of generic function signatures
+- implement-protocol macro: Implements a protocol for a specific type
+- Protocol registry: Tracks which types implement which protocols
+- Verification system: Ensures all protocol methods are implemented
+- Protocol predicates: Check if objects implement specific protocols
+
+*** Real-World Example: Document Management System
+The document management system demonstrates practical protocol usage:
+- Base document class with common properties
+- Specific document types (PDF, Markdown, Image)
+- Multiple protocols implemented by different types:
+  - Serializable: Convert to/from serialized format
+  - Cacheable: Provide caching behavior
+  - Validatable: Ensure document validity
+
+Different document types implement different combinations of protocols based on their capabilities.
+
+* Demo Script
+** Setup (1 minute)
+1. Show traditional inheritance problems (diamond problem, tight coupling)
+2. Introduce protocol-oriented alternative
+
+** Protocol Definition (1.5 minutes)
+1. Define protocols for document management
+2. Show protocol composition
+
+** Implementation (1.5 minutes)
+1. Implement protocols for different document types
+2. Show how same type can implement multiple protocols
+3. Demonstrate protocol checking
+
+** Practical Benefits (1 minute)
+1. Show protocol-based document processing
+2. Demonstrate easy extension with new document types
+3. Show independent testing of protocol implementations
+
+* Key Takeaways
+- **Composition over Inheritance**: Mix and match capabilities
+- **Clear Contracts**: Protocols define explicit interfaces
+- **Easy Testing**: Test protocol implementations independently
+- **Flexible Extension**: Add new types without modifying existing code
+- **Reduced Coupling**: Components depend on protocols, not concrete types
+
+* Comparison with Other Languages
+- **Swift**: Similar protocol system, but Lisp's macros enable more powerful abstractions
+- **Rust**: Traits provide similar functionality, but less runtime flexibility
+- **Go**: Interfaces are similar, but Lisp's generic functions are more powerful
+- **Java/C#**: Interfaces require explicit declaration, protocols are implicit in Lisp
+
+* Implementation Challenges
+- Performance considerations with dynamic dispatch
+- Protocol documentation and discoverability
+- Integration with existing CLOS-based codebases
+- Tooling support for protocol analysis
+
+* Implementation Status
+- [x] Core protocol definition system (80% complete)
+- [x] Implementation verification (70% complete)
+- [ ] Development tooling integration (40% complete)
+- [ ] Performance optimization (30% complete)
+- [ ] Documentation generation (50% complete)

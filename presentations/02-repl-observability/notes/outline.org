@@ -1,0 +1,62 @@
+#+TITLE: REPL-Driven Observability for Distributed Lisp Systems
+#+AUTHOR: aygp-dr
+#+DATE: 2025-05-25
+#+PROPERTY: header-args :mkdirp yes
+
+* Abstract
+A framework that extends the Common Lisp REPL across distributed systems, enabling real-time debugging, monitoring, and manipulation of multiple Lisp processes as if they were part of a single interactive environment.
+
+* Motivation
+Modern applications often involve multiple Lisp processes across different machines, but traditional debugging tools break down in distributed environments. This system brings Lisp's interactive development philosophy to distributed systems by creating a unified REPL experience.
+
+* Technical Details
+** System Architecture
+The distributed REPL consists of:
+- Master REPL: Central control point on development machine
+- Visualization Dashboard: Real-time system health monitoring
+- Command Dispatcher: Routes commands to appropriate nodes
+- Node Agents: Run on each distributed Lisp process
+- Telemetry Collection: Gathers metrics from all nodes
+
+** Core Components
+*** Distributed REPL Server
+- Manages connections to multiple nodes
+- Executes commands on specific or all nodes
+- Handles timeouts and error conditions
+- Maintains command history across sessions
+- Provides thread-safe client handling
+
+*** Telemetry Collection
+- Collects system metrics at configurable intervals
+- Tracks memory usage, CPU, thread counts, and GC statistics
+- Provides function-level telemetry with duration and memory tracking
+- Generates real-time HTML dashboards for visualization
+- Supports metric history and trend analysis
+
+* Demo Script
+** Setup (1 minute)
+1. Show 3 Lisp processes running on different "machines" (local containers)
+2. Connect distributed REPL to all nodes
+
+** Live Debugging (2 minutes)
+1. Inject a bug into the web server
+2. Show real-time dashboard detecting the issue
+3. Debug across multiple nodes simultaneously
+
+** Hot-Fix Deployment (2 minutes)
+1. Fix the issue across all affected nodes
+2. Show system recovery in real-time
+3. Demonstrate rollback capability
+
+* Key Takeaways
+- Maintains Lisp's interactive development philosophy in production
+- Enables real-time debugging across distributed systems
+- Provides unified view of system health and behavior
+- Allows hot-fixes without service interruption
+
+* Implementation Status
+- [x] Basic REPL server framework (80% complete)
+- [ ] Secure authentication and authorization (40% complete)
+- [ ] Real-time telemetry dashboard (60% complete)
+- [ ] Command history and replay (30% complete)
+- [ ] Integration with common deployment tools (20% complete)

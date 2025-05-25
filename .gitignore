@@ -29,5 +29,8 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Claude settings
+.claude/
+
 # Log files
 *.log

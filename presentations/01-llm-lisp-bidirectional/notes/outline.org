@@ -1,0 +1,67 @@
+#+TITLE: Bidirectional Code Generation with Lisp and LLMs
+#+AUTHOR: aygp-dr
+#+DATE: 2025-05-25
+#+PROPERTY: header-args :mkdirp yes
+
+* Abstract
+A system that enables bidirectional communication between Large Language Models and Common Lisp environments, where Lisp code can generate prompts for LLMs and LLMs can produce executable Lisp code that modifies the generating system itself.
+
+* Motivation
+Current AI-assisted programming tools treat code generation as a one-way process. This talk demonstrates how Lisp's homoiconicity enables a more sophisticated bidirectional relationship where:
+- Lisp programs can construct and modify their own prompts
+- Generated code can alter the prompt generation logic
+- The system becomes self-improving through iterative refinement
+
+* Technical Details
+** Core Architecture
+The system consists of several interconnected components:
+- Lisp Environment: Controls prompt generation and code evaluation
+- LLM API: Processes prompts and generates code
+- Code Parser: Analyzes generated code structure
+- Safety Validator: Ensures generated code is safe to execute
+- Evaluator: Executes validated code
+- Prompt Templates: Structured prompt patterns that can be updated
+- Knowledge Base: Stores context and learning from previous interactions
+
+** Key Components
+*** Prompt Generator
+- Generates contextual prompts for LLM code completion
+- Tracks success rates and usage counts for templates
+- Adapts template structure based on feedback
+- Enables self-modifying prompt generation
+
+*** Code Safety Validator
+- Validates generated code before execution
+- Checks for dangerous symbols and operations
+- Restricts package usage to allowed list
+- Provides safe evaluation environment with limited privileges
+
+* Demo Script
+** Setup Phase (1 minute)
+1. Show empty Lisp function with docstring
+2. Initialize bidirectional system with LLM model
+
+** Generation Phase (2 minutes)
+1. Trigger automatic prompt generation
+2. Show generated prompt formatted for LLM
+3. Receive and evaluate generated implementation
+4. Demonstrate the working function
+
+** Self-Improvement Phase (2 minutes)
+1. Show how the system learns from results
+2. Generate improved prompt based on performance
+3. Show iteration producing better implementation
+4. Demonstrate bidirectional feedback loop
+
+* Key Takeaways
+- Lisp's symbolic nature makes it ideal for AI collaboration
+- Self-modifying prompt generation enables continuous improvement
+- Safety validation prevents dangerous code execution
+- Bidirectional flow creates emergent intelligent behavior
+
+* Implementation Status
+- [ ] Core prompt generation system (40% complete)
+- [ ] LLM API integration (20% complete)
+- [ ] Safety validation framework (60% complete)
+- [ ] Bidirectional feedback loop (10% complete)
+- [ ] Demo application (30% complete)
